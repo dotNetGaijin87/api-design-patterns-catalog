@@ -204,10 +204,16 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   const card = document.createElement('div');
   card.className = 'exchange';
 
-  const reqLine = document.createElement('div');
-  reqLine.className = 'req-line';
-  reqLine.innerHTML = `<span class="method ${req.method}">${req.method}</span><span class="path">${escapeHtml(req.path)}</span>`;
-  card.appendChild(reqLine);
+  // --- リクエストパネル ---
+  const reqPanel = document.createElement('div');
+  reqPanel.className = 'panel req-panel';
+  const reqHead = document.createElement('div');
+  reqHead.className = 'panel-head';
+  reqHead.innerHTML =
+    `<span class="panel-tag">リクエスト</span>` +
+    `<span class="method ${req.method}">${req.method}</span>` +
+    `<span class="path">${escapeHtml(req.path)}</span>`;
+  reqPanel.appendChild(reqHead);
 
   if (req.headers) {
     const meta = document.createElement('div');
@@ -215,28 +221,48 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     meta.innerHTML = Object.entries(req.headers)
       .map(([k, v]) => `${escapeHtml(k)}: <code>${escapeHtml(String(v))}</code>`)
       .join('&nbsp;&nbsp;');
-    card.appendChild(meta);
+    reqPanel.appendChild(meta);
   }
   if (req.body !== undefined) {
-    card.appendChild(codeBlock('リクエスト本文', req.body));
+    reqPanel.appendChild(codeBlock('リクエスト本文', req.body));
   }
+  card.appendChild(reqPanel);
+
+  const connector = document.createElement('div');
+  connector.className = 'connector';
+  connector.textContent = '↓';
+  card.appendChild(connector);
+
+  // --- レスポンスパネル ---
+  const resPanel = document.createElement('div');
+  resPanel.className = 'panel res-panel';
 
   if (networkError) {
-    const resLine = document.createElement('div');
-    resLine.className = 'res-line';
-    resLine.innerHTML = `<span class="status s0">ネットワークエラー</span><span class="timing">${escapeHtml(String(networkError.message || networkError))}</span>`;
-    card.appendChild(resLine);
+    resPanel.classList.add('s0');
+    const head = document.createElement('div');
+    head.className = 'panel-head';
+    head.innerHTML = `<span class="panel-tag">レスポンス</span><span class="status">ネットワークエラー</span>`;
+    const body = document.createElement('div');
+    body.className = 'req-meta';
+    body.textContent = String(networkError.message || networkError);
+    resPanel.appendChild(head);
+    resPanel.appendChild(body);
+    card.appendChild(resPanel);
     return card;
   }
 
   const cls = res.status < 300 ? 's2' : res.status < 400 ? 's3' : res.status < 500 ? 's4' : 's5';
-  const resLine = document.createElement('div');
-  resLine.className = 'res-line';
-  let statusHtml = `<span class="status ${cls}">${res.status} ${escapeHtml(res.statusText || '')}</span><span class="timing">${ms} ms</span>`;
-  if (res.headers.get('Idempotent-Replayed') === 'true') statusHtml += `<span class="replay-flag">⟳ リプレイ（重複排除）</span>`;
-  if (res.status === 304) statusHtml += `<span class="replay-flag">本文の転送なし</span>`;
-  resLine.innerHTML = statusHtml;
-  card.appendChild(resLine);
+  resPanel.classList.add(cls);
+  const resHead = document.createElement('div');
+  resHead.className = 'panel-head';
+  let headHtml =
+    `<span class="panel-tag">レスポンス</span>` +
+    `<span class="status">${res.status} ${escapeHtml(res.statusText || '')}</span>` +
+    `<span class="timing">${ms} ms</span>`;
+  if (res.headers.get('Idempotent-Replayed') === 'true') headHtml += `<span class="replay-flag">⟳ リプレイ（重複排除）</span>`;
+  if (res.status === 304) headHtml += `<span class="replay-flag">本文の転送なし</span>`;
+  resHead.innerHTML = headHtml;
+  resPanel.appendChild(resHead);
 
   const interesting = ['Location', 'ETag', 'Last-Modified', 'Cache-Control', 'Idempotent-Replayed', 'Content-Type'];
   const shown = interesting.map((h) => [h, res.headers.get(h)]).filter(([, v]) => v);
@@ -244,10 +270,10 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     const hdr = document.createElement('div');
     hdr.className = 'res-headers';
     hdr.innerHTML = shown.map(([k, v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('');
-    card.appendChild(hdr);
+    resPanel.appendChild(hdr);
   }
 
-  card.appendChild(codeBlock('レスポンス本文', json !== null ? json : (bodyText || '')));
+  resPanel.appendChild(codeBlock('レスポンス本文', json !== null ? json : (bodyText || '')));
 
   const followups = buildFollowups(req, res, json);
   if (followups.length) {
@@ -260,9 +286,10 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
       b.addEventListener('click', () => runRequest(f.request));
       wrap.appendChild(b);
     }
-    card.appendChild(wrap);
+    resPanel.appendChild(wrap);
   }
 
+  card.appendChild(resPanel);
   return card;
 }
 

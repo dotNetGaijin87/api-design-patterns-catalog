@@ -5,7 +5,7 @@
 クリックすると、右側のコンソールに「リクエスト・レスポンス（ステータス・ヘッダー・ボディ）・
 妥当な次の操作（`Location` をたどる、ページトークンを追う）」が表示されます。
 
-**▶ ライブデモ（StackBlitz・インストール不要、ブラウザ上で実行）:**
+**▶ ライブデモ（StackBlitz）:**
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
 

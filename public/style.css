@@ -70,10 +70,13 @@ body {
   flex-direction: column;
   background: var(--bg);
   color: var(--ink);
-  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN",
-    "Hiragino Sans", "Yu Gothic", "Noto Sans JP", Meiryo, Roboto, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", Meiryo, "Yu Gothic UI",
+    "Noto Sans JP", Roboto, Helvetica, Arial, sans-serif;
   font-size: 15px;
-  line-height: 1.65;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 html[data-theme="dark"] body {
   background:
@@ -187,10 +190,13 @@ html[data-theme="dark"] body {
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent);
   border-radius: 10px;
-  padding: 16px 18px;
+  padding: 20px 24px;
+  max-width: 760px;
   white-space: pre-wrap;
   color: var(--ink);
-  font-size: 14.5px;
+  font-size: 15.5px;
+  line-height: 2;
+  letter-spacing: 0.01em;
   margin-bottom: 26px;
 }
 

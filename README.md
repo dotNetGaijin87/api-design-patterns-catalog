@@ -9,7 +9,7 @@
 例として扱うリソースは、よく知られた日本の書籍の小さなカタログです。パターンを示すための
 馴染みのある中立的なドメインとして使っているだけです。
 
-![patterns](https://img.shields.io/badge/patterns-7-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
+![patterns](https://img.shields.io/badge/patterns-9-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
 ## クイックスタート
 
@@ -19,7 +19,7 @@ npm start            # 依存関係なし — npm install は不要
 ```
 
 **依存パッケージはありません。** サーバーは Node 標準の `http` モジュールを、小さな
-Express 風シム（[src/lib/mini-app.js](src/lib/mini-app.js)）経由で利用するため、`npm install`
+Express 風シム（[src/core/mini-app.js](src/core/mini-app.js)）経由で利用するため、`npm install`
 は不要です。Node ≥ 18 が必要です。
 
 ポート 3000 が使用中の場合は、別のポートを指定します:
@@ -32,15 +32,17 @@ PORT=5050 npm start
 
 ## 含まれるパターン
 
-| パターン | 何を示すか | エンドポイント名前空間 |
-|---|---|---|
-| **標準メソッド（CRUD）** | List / Get / Create / Update / Delete の正攻法。`201 + Location`、部分更新の `PATCH`、`204` | `/api/standard-methods` |
-| **ページネーション** | 不透明な `nextPageToken` カーソルによる固定サイズのページ | `/api/pagination` |
-| **フィルタリング** | AND で結合するクエリパラメータでコレクションを絞り込む | `/api/filtering` |
-| **部分レスポンス** | フィールドマスク（`?fields=id,title`）で over-fetching を避ける | `/api/partial-response` |
-| **長時間実行オペレーション** | `202 Accepted` ＋ 進捗をポーリングできる Operation | `/api/lro` |
-| **冪等性キー** | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す | `/api/idempotency` |
-| **ソフトデリート** | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete` | `/api/soft-deletion` |
+| カテゴリ | パターン | 何を示すか | エンドポイント名前空間 |
+|---|---|---|---|
+| 基礎 | **標準メソッド（CRUD）** | List / Get / Create / Update / Delete の正攻法。`201 + Location`、部分更新の `PATCH`、`204` | `/api/standard-methods` |
+| データ転送の削減 | **ページネーション** | 不透明な `nextPageToken` カーソルによる固定サイズのページ | `/api/pagination` |
+| データ転送の削減 | **フィルタリング** | AND で結合するクエリパラメータでコレクションを絞り込む | `/api/filtering` |
+| データ転送の削減 | **部分レスポンス** | フィールドマスク（`?fields=id,title`）で over-fetching を避ける | `/api/partial-response` |
+| データ転送の削減 | **条件付きリクエスト** | `ETag`／`Last-Modified` と `If-None-Match`／`If-Modified-Since` で `304 Not Modified` | `/api/conditional-requests` |
+| 書き込みと信頼性 | **冪等性キー** | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す | `/api/idempotency` |
+| 書き込みと信頼性 | **長時間実行オペレーション** | `202 Accepted` ＋ 進捗をポーリングできる Operation | `/api/long-running-operations` |
+| 書き込みと信頼性 | **楽観的並行性制御** | `If-Match` ＋ `ETag` でロストアップデートを防ぐ（`412`／`428`） | `/api/optimistic-concurrency` |
+| リソースのライフサイクル | **ソフトデリート** | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete` | `/api/soft-deletion` |
 
 ## 構成
 

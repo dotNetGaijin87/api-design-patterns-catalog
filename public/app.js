@@ -334,6 +334,7 @@ function copyButton(getText) {
 // Location ヘッダーやページトークン、ETag など、レスポンスに応じた次の操作を提示する。
 function buildFollowups(req, res, json) {
   const out = [];
+  const patternId = active && active.id;
 
   const location = res.headers.get('Location');
   if (location) out.push({ label: 'Location をたどる →', request: { method: 'GET', path: location } });
@@ -343,8 +344,16 @@ function buildFollowups(req, res, json) {
   }
 
   const etag = res.headers.get('ETag');
-  if (etag && !(req.headers && req.headers['If-None-Match'])) {
-    out.push({ label: 'If-None-Match で再取得 → 304', request: { method: req.method, path: req.path, headers: { 'If-None-Match': etag } } });
+  const lastMod = res.headers.get('Last-Modified');
+  const conditional = req.headers && (req.headers['If-None-Match'] || req.headers['If-Modified-Since']);
+
+  if (patternId === 'conditional-requests' && req.method === 'GET' && !conditional) {
+    if (etag) out.push({ label: 'If-None-Match で再取得 → 304', request: { method: 'GET', path: req.path, headers: { 'If-None-Match': etag } } });
+    if (lastMod) out.push({ label: 'If-Modified-Since で再取得 → 304', request: { method: 'GET', path: req.path, headers: { 'If-Modified-Since': lastMod } } });
+  }
+
+  if (patternId === 'optimistic-concurrency' && req.method === 'GET' && etag) {
+    out.push({ label: 'この ETag で更新 → 200', request: { method: 'PATCH', path: req.path, headers: { 'If-Match': etag }, body: { rating: 5.0 } } });
   }
 
   return out;

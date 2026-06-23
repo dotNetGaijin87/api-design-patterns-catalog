@@ -9,7 +9,7 @@
 例として扱うリソースは、よく知られた日本の書籍の小さなカタログです。パターンを示すための
 馴染みのある中立的なドメインとして使っているだけです。
 
-![patterns](https://img.shields.io/badge/patterns-9-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
+![patterns](https://img.shields.io/badge/patterns-12-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
 ## クイックスタート
 
@@ -42,6 +42,9 @@ PORT=5050 npm start
 | 書き込みと信頼性 | **冪等性キー** | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す | `/api/idempotency` |
 | 書き込みと信頼性 | **長時間実行オペレーション** | `202 Accepted` ＋ 進捗をポーリングできる Operation | `/api/long-running-operations` |
 | 書き込みと信頼性 | **楽観的並行性制御** | `If-Match` ＋ `ETag` でロストアップデートを防ぐ（`412`／`428`） | `/api/optimistic-concurrency` |
+| セキュリティ | **認証（Bearer トークン）** | `Authorization: Bearer` を検証。無ければ `401` + `WWW-Authenticate` | `/api/auth-bearer` |
+| セキュリティ | **認可（スコープ）** | スコープ不足は `403`。最小権限の原則 | `/api/authorization-scopes` |
+| セキュリティ | **レート制限** | `429 Too Many Requests` + `Retry-After` + `RateLimit-*` | `/api/rate-limiting` |
 | リソースのライフサイクル | **ソフトデリート** | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete` | `/api/soft-deletion` |
 
 ## 構成

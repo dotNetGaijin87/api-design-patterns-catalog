@@ -98,16 +98,7 @@ html, body {
 .detail { overflow-y: auto; padding: 28px 32px; }
 .loading { color: var(--muted); }
 
-.detail-head h2 { margin: 0 0 6px; font-size: 24px; }
-.source {
-  display: inline-block;
-  font-size: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-bottom: 12px;
-}
+.detail-head h2 { margin: 0 0 10px; font-size: 24px; }
 .blurb { margin: 0 0 18px; font-size: 16px; color: #374151; }
 
 .docs {

@@ -9,7 +9,6 @@ const { seedBooks } = require('../data');
 // nextPageToken; the client sends it back to fetch the following page.
 // Opaque tokens (vs. raw offsets) let the server change its paging strategy
 // later without breaking clients.
-// Source: "API Design Patterns" (Geewax), ch. 21.
 
 const books = seedBooks();
 const DEFAULT_PAGE_SIZE = 5;
@@ -46,7 +45,6 @@ module.exports = {
     id: 'pagination',
     title: 'Pagination',
     blurb: 'Return one bounded page at a time with an opaque token for the next one.',
-    source: 'API Design Patterns (Geewax), ch. 21',
     docs:
       'A List endpoint should never stream an unbounded collection. Return a fixed-size page ' +
       'and a nextPageToken. The client passes that token back via ?pageToken=... to get the ' +

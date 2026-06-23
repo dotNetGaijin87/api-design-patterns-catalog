@@ -8,7 +8,6 @@ const { seedBooks } = require('../data');
 // Let the client choose which fields come back via ?fields=id,title,author.
 // Smaller payloads, less over-fetching — the REST cousin of GraphQL's
 // selection sets.
-// Source: "API Design Patterns" (Geewax), ch. 8 (partial retrieval).
 
 const books = seedBooks();
 const BASE = '/api/partial-response';
@@ -49,7 +48,6 @@ module.exports = {
     id: 'partial-response',
     title: 'Partial Response (field masks)',
     blurb: 'Let the client request only the fields it needs with ?fields=id,title.',
-    source: 'API Design Patterns (Geewax), ch. 8',
     docs:
       'Mobile clients and dashboards rarely need every field of a resource. A field mask — ' +
       '?fields=id,title,author — lets the caller project exactly the columns it wants, shrinking ' +

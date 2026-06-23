@@ -12,7 +12,6 @@ const { seedBooks } = require('../data');
 //   Create POST   /books         -> 201 + Location header
 //   Update PATCH  /books/{id}    (partial update)
 //   Delete DELETE /books/{id}    -> 204 No Content
-// Source: "API Design Patterns" (Geewax), ch. 7.
 
 let books = seedBooks();
 let nextId = books.length + 1;
@@ -40,7 +39,7 @@ function register(app) {
       title: req.body.title || 'Untitled',
       author: req.body.author || 'Unknown',
       year: req.body.year || new Date().getFullYear(),
-      category: req.body.category || 'Design',
+      category: req.body.category || 'Fiction',
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
@@ -83,7 +82,6 @@ module.exports = {
     id: 'standard-methods',
     title: 'Standard Methods (CRUD)',
     blurb: 'The five predictable verbs every resource should support, mapped cleanly onto HTTP.',
-    source: 'API Design Patterns (Geewax), ch. 7',
     docs:
       'Before designing anything custom, give a resource the five "standard methods": List, ' +
       'Get, Create, Update, Delete. Consistency is the point — once a client learns the shape ' +
@@ -100,7 +98,7 @@ module.exports = {
       label: 'Create a book → 201',
       method: 'POST',
       path: `${BASE}/books`,
-      body: { title: 'Web API Cookbook', author: 'Joshua Crum', year: 2024, category: 'Design', pages: 300, rating: 4.0 }
+      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction', pages: 320, rating: 4.0 }
     },
     {
       label: 'Update a book (PATCH)',

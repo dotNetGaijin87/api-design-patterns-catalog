@@ -5,8 +5,8 @@ node_modules/
 *.log
 npm-debug.log*
 
-# The source books are large (~85 MB total) and copyrighted — keep them
-# out of the repo. Remove this line if you intend to commit them.
+# Local PDFs are kept out of the repo to keep it light.
+# Remove this line if you want to commit PDFs.
 *.pdf
 
 # OS / editor cruft

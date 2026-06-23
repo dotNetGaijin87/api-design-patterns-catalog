@@ -8,7 +8,6 @@ const { seedBooks } = require('../data');
 // Deletes are often regrettable. Instead of erasing the row, mark it
 // deleted (a "tombstone"): hide it from List by default, keep it retrievable
 // with ?showDeleted=true, and allow an :undelete to bring it back.
-// Source: "API Design Patterns" (Geewax), ch. 25.
 
 let books = seedBooks().map((b) => ({ ...b, deleted: false }));
 const BASE = '/api/soft-deletion';
@@ -60,7 +59,6 @@ module.exports = {
     id: 'soft-deletion',
     title: 'Soft Deletion',
     blurb: 'Tombstone resources instead of erasing them — hide by default, allow undelete.',
-    source: 'API Design Patterns (Geewax), ch. 25',
     docs:
       'Hard deletes are unforgiving. Soft deletion marks a resource as deleted (a "tombstone") ' +
       'rather than removing it: List hides it by default, ?showDeleted=true reveals it with its ' +

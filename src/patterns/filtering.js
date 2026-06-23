@@ -8,7 +8,6 @@ const { seedBooks, CATEGORIES } = require('../data');
 // Let clients narrow a collection with query parameters. Filters are ANDed
 // together and an echo of the applied filters is returned so the response is
 // self-describing.
-// Source: "API Design Patterns" (Geewax), ch. 22.
 
 const books = seedBooks();
 const BASE = '/api/filtering';
@@ -50,7 +49,6 @@ module.exports = {
     id: 'filtering',
     title: 'Filtering',
     blurb: 'Narrow a collection with query parameters that combine with AND.',
-    source: 'API Design Patterns (Geewax), ch. 22',
     docs:
       'Filtering lets a client ask for the subset of a collection it cares about. Each ' +
       'parameter is a separate, well-named field (author, category, minYear, q for a title ' +
@@ -59,10 +57,10 @@ module.exports = {
       'self-describing and easy to debug. Available categories: ' + CATEGORIES.join(', ') + '.'
   },
   demos: [
-    { label: 'Category = Design', method: 'GET', path: `${BASE}/books?category=Design` },
-    { label: 'Security books since 2020', method: 'GET', path: `${BASE}/books?category=Security&minYear=2020` },
-    { label: 'Title contains "Web"', method: 'GET', path: `${BASE}/books?q=Web` },
-    { label: 'By author (Amundsen)', method: 'GET', path: `${BASE}/books?author=Amundsen` },
+    { label: 'Category = Fantasy', method: 'GET', path: `${BASE}/books?category=Fantasy` },
+    { label: 'Sci-Fi since 2023', method: 'GET', path: `${BASE}/books?category=Sci-Fi&minYear=2023` },
+    { label: 'Title contains "Tide"', method: 'GET', path: `${BASE}/books?q=Tide` },
+    { label: 'By author (Vale)', method: 'GET', path: `${BASE}/books?author=Vale` },
     { label: 'No filters (everything)', method: 'GET', path: `${BASE}/books` }
   ],
   register

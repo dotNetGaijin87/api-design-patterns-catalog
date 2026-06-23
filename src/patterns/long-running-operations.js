@@ -6,7 +6,6 @@
 // Some work can't finish within one request (exports, batch imports, video
 // transcodes). Instead of blocking, return 202 Accepted immediately with an
 // Operation resource the client can poll until done == true.
-// Source: "API Design Patterns" (Geewax), ch. 10.
 
 const BASE = '/api/lro';
 const DURATION_MS = 6000; // the fake "export" takes ~6 seconds to complete.
@@ -68,7 +67,6 @@ module.exports = {
     id: 'long-running-operations',
     title: 'Long-Running Operations',
     blurb: 'Return 202 + a pollable Operation for work that can\'t finish in one request.',
-    source: 'API Design Patterns (Geewax), ch. 10',
     docs:
       'When work takes too long for a single request — an export, a bulk import, a transcode — ' +
       'don\'t hold the connection open. Accept the request, return 202 Accepted with an ' +

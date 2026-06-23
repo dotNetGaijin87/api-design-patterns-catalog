@@ -6,9 +6,8 @@ sidebar, click a request, and watch it work — the request, the response (statu
 headers, body), and the natural next step (follow a `Location`, chase a
 pagination token).
 
-The patterns are distilled from a shelf of well-known API books — chiefly
-*API Design Patterns* (JJ Geewax) and *Patterns for API Design* (Zimmermann et
-al.). Fittingly, the example resource is itself a small library of API books.
+The example resource is a small, neutral catalog of (fictional) books, used
+purely as a familiar domain for demonstrating the patterns.
 
 ![patterns](https://img.shields.io/badge/patterns-7-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
@@ -46,9 +45,9 @@ Use `npm run dev` for auto-reload while editing (Node's built-in `--watch`).
 ## How it's wired
 
 ```
-server.js              Express app: serves the UI + mounts every pattern
+server.js              HTTP server: serves the UI + mounts every pattern
 src/
-  data.js              Shared seed dataset (the bookshelf) + per-demo copies
+  data.js              Shared seed dataset (sample book catalog) + per-demo copies
   registry.js          The ordered list of pattern modules
   patterns/*.js        One self-contained module per pattern
 public/
@@ -69,7 +68,7 @@ picks it up automatically — no other changes needed.
 
 ```js
 module.exports = {
-  meta: { id, title, blurb, source, docs },
+  meta: { id, title, blurb, docs },
   demos: [{ label, method, path, headers?, body? }],
   register(app) { app.get('/api/<name>/...', handler); }
 };
@@ -79,5 +78,5 @@ module.exports = {
 
 - All data lives in memory and resets on restart; mutating patterns also expose
   a **Reset** request so you can return to a clean slate at any time.
-- The source PDFs are git-ignored (large + copyrighted). Remove the `*.pdf` line
-  from `.gitignore` if you intend to keep them in the repo.
+- Any local PDFs are git-ignored to keep the repo light. Remove the `*.pdf` line
+  from `.gitignore` if you want to commit PDFs.

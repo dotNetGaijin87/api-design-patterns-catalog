@@ -8,7 +8,6 @@ const { seedBooks } = require('../data');
 // POST is not naturally idempotent: a retried "create" after a dropped
 // response would make a duplicate. An Idempotency-Key header lets the server
 // recognise a replay and return the original result instead of acting twice.
-// Source: "API Design Patterns" (Geewax), ch. 26 (request deduplication).
 
 let books = seedBooks();
 let nextId = books.length + 1;
@@ -35,7 +34,7 @@ function register(app) {
       title: req.body.title || 'Untitled',
       author: req.body.author || 'Unknown',
       year: req.body.year || new Date().getFullYear(),
-      category: req.body.category || 'Design',
+      category: req.body.category || 'Fiction',
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
@@ -62,7 +61,6 @@ module.exports = {
     id: 'idempotency',
     title: 'Idempotency Keys',
     blurb: 'Make POST safe to retry: the same Idempotency-Key returns the original result.',
-    source: 'API Design Patterns (Geewax), ch. 26',
     docs:
       'A client that never hears back from a POST faces a dilemma: did the create succeed? If ' +
       'it retries, it risks a duplicate. An Idempotency-Key header (a client-generated unique ' +
@@ -78,21 +76,21 @@ module.exports = {
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'abc-123' },
-      body: { title: 'The API Lifecycle', author: 'M. Amundsen', year: 2024, category: 'Delivery' }
+      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction' }
     },
     {
       label: 'Create AGAIN (key=abc-123) → replay',
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'abc-123' },
-      body: { title: 'The API Lifecycle', author: 'M. Amundsen', year: 2024, category: 'Delivery' }
+      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction' }
     },
     {
       label: 'Create (key=xyz-789) → new book',
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'xyz-789' },
-      body: { title: 'Async API Design', author: 'F. Daniel', year: 2025, category: 'Architecture' }
+      body: { title: 'Silver Harbor', author: 'Lena Voss', year: 2025, category: 'Mystery' }
     },
     { label: 'List books', method: 'GET', path: `${BASE}/books` },
     { label: 'Reset demo data', method: 'POST', path: `${BASE}/_reset` }

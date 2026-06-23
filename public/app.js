@@ -54,7 +54,6 @@ function renderDetail(p) {
   head.className = 'detail-head';
   head.innerHTML =
     `<h2>${escapeHtml(p.title)}</h2>` +
-    `<span class="source">${escapeHtml(p.source)}</span>` +
     `<p class="blurb">${escapeHtml(p.blurb)}</p>`;
   detail.appendChild(head);
 

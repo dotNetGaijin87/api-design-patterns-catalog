@@ -166,7 +166,7 @@ function renderDetail(p) {
 
 function resetConsole() {
   const con = $('#console');
-  if (con) con.innerHTML = `<div class="console-empty">中央の「試す」からリクエストをクリックすると、ここに実行結果（リクエストとレスポンス）が表示されます。</div>`;
+  if (con) con.innerHTML = `<div class="console-empty">中央の「試す」にあるリクエストをクリックすると、ここに実行結果（リクエストとレスポンス）が表示されます。</div>`;
 }
 
 async function runRequest(req) {

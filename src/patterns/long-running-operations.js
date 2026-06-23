@@ -57,7 +57,7 @@ module.exports = {
       '処理があります。その場合は接続を保持し続けるのではなく、リクエストを受理して 202 Accepted ' +
       'を返し、Operation リソース（{ name, done, metadata }）と Location ヘッダーを渡します。' +
       'クライアントは done が true になるまでその Operation をポーリングします。\n\n' +
-      '「エクスポート開始」を実行すると、done:false・進捗0 が返ります。「Location をたどる →」' +
+      '「エクスポート開始」を実行すると、done:false（進捗 0%）が返ります。「Location をたどる →」' +
       'ボタンで Operation をポーリングできます。約6秒のあいだ何度かクリックすると progressPercent ' +
       'が増えていき、最後に結果のペイロード（downloadUrl）が現れます。'
   },

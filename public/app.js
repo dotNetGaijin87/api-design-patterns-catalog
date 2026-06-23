@@ -209,18 +209,16 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   reqLine.innerHTML = `<span class="method ${req.method}">${req.method}</span><span class="path">${escapeHtml(req.path)}</span>`;
   card.appendChild(reqLine);
 
-  if (req.headers || req.body !== undefined) {
+  if (req.headers) {
     const meta = document.createElement('div');
     meta.className = 'req-meta';
-    const bits = [];
-    if (req.headers) {
-      bits.push(Object.entries(req.headers).map(([k, v]) => `${escapeHtml(k)}: <code>${escapeHtml(String(v))}</code>`).join('&nbsp;&nbsp;'));
-    }
-    if (req.body !== undefined) {
-      bits.push(`ボディ: <code>${escapeHtml(JSON.stringify(req.body))}</code>`);
-    }
-    meta.innerHTML = bits.join('<br>');
+    meta.innerHTML = Object.entries(req.headers)
+      .map(([k, v]) => `${escapeHtml(k)}: <code>${escapeHtml(String(v))}</code>`)
+      .join('&nbsp;&nbsp;');
     card.appendChild(meta);
+  }
+  if (req.body !== undefined) {
+    card.appendChild(codeBlock('リクエスト本文', req.body));
   }
 
   if (networkError) {
@@ -249,20 +247,7 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     card.appendChild(hdr);
   }
 
-  const pretty = json !== null ? JSON.stringify(json, null, 2) : (bodyText || '');
-  const block = document.createElement('div');
-  block.className = 'code-block';
-  const bar = document.createElement('div');
-  bar.className = 'code-bar';
-  bar.innerHTML = `<span class="code-lang">レスポンス本文</span>`;
-  bar.appendChild(copyButton(() => pretty));
-  const pre = document.createElement('pre');
-  pre.className = 'body';
-  if (json !== null) pre.innerHTML = syntaxHighlight(json);
-  else pre.textContent = bodyText || '（本文なし）';
-  block.appendChild(bar);
-  block.appendChild(pre);
-  card.appendChild(block);
+  card.appendChild(codeBlock('レスポンス本文', json !== null ? json : (bodyText || '')));
 
   const followups = buildFollowups(req, res, json);
   if (followups.length) {
@@ -279,6 +264,28 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   }
 
   return card;
+}
+
+function codeBlock(label, value) {
+  const isObject = value !== null && typeof value === 'object';
+  const text = isObject ? JSON.stringify(value, null, 2) : String(value ?? '');
+
+  const block = document.createElement('div');
+  block.className = 'code-block';
+
+  const bar = document.createElement('div');
+  bar.className = 'code-bar';
+  bar.innerHTML = `<span class="code-lang">${escapeHtml(label)}</span>`;
+  bar.appendChild(copyButton(() => text));
+
+  const pre = document.createElement('pre');
+  pre.className = 'body';
+  if (isObject) pre.innerHTML = syntaxHighlight(value);
+  else pre.textContent = text || '（本文なし）';
+
+  block.appendChild(bar);
+  block.appendChild(pre);
+  return block;
 }
 
 function copyButton(getText) {

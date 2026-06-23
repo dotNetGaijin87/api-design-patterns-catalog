@@ -1,7 +1,6 @@
 'use strict';
 
-// ごく小さなインメモリ・リポジトリ。状態を変更するパターンが seedBooks() の呼び出しや
-// find / splice / id 採番を各自で書き直さずに済むよう、共通化したもの。
+// 状態を変更するパターンが共有する、ごく小さなインメモリ・リポジトリ。
 // createStore(seedFn) でパターンごとに独立したストアを持てる。
 
 class Store {
@@ -10,10 +9,9 @@ class Store {
     this.reset();
   }
 
-  // シードから作り直し、id 採番カウンタも初期化する。
   reset() {
     this.items = this._seedFn();
-    this._seq = this.items.length;
+    this._seq = this.items.length; // id 採番用カウンタ
     return this;
   }
 
@@ -30,7 +28,6 @@ class Store {
     return item;
   }
 
-  // 見つかれば削除して true、なければ false。
   remove(id) {
     const idx = this.items.findIndex((i) => i.id === id);
     if (idx === -1) return false;
@@ -38,7 +35,6 @@ class Store {
     return true;
   }
 
-  // 'book-17' のような連番 id を払い出す。
   newId(prefix = 'book-') {
     return `${prefix}${String(++this._seq).padStart(2, '0')}`;
   }

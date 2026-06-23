@@ -2,18 +2,11 @@
 
 const { seedBooks } = require('../domain/books');
 
-// ---------------------------------------------------------------------------
-// Pagination (opaque cursor / page tokens)
-// ---------------------------------------------------------------------------
-// 無制限のリストは返さない。1ページ分と不透明な nextPageToken を返し、クライアントは
-// それを送り返して次ページを取得する。
-
-const books = seedBooks(); // 読み取り専用
+const books = seedBooks();
 const DEFAULT_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 50;
 
-// トークンは「次のインデックス」をエンコードしているだけだが、base64url の不透明な値なので
-// クライアントは中身を解釈せず、不透明な文字列として扱わなければならない。
+// トークンは不透明な値として扱う（中身は単なる次インデックスの base64url）。
 const encodeToken = (index) => Buffer.from(String(index)).toString('base64url');
 const decodeToken = (token) => {
   const n = parseInt(Buffer.from(token, 'base64url').toString('utf8'), 10);

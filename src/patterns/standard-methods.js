@@ -4,29 +4,17 @@ const { seedBooks } = require('../domain/books');
 const { createStore } = require('../domain/store');
 const { notFound } = require('../core/http');
 
-// ---------------------------------------------------------------------------
-// Standard Methods (List / Get / Create / Update / Delete)
-// ---------------------------------------------------------------------------
-//   List   GET    /books
-//   Get    GET    /books/{id}
-//   Create POST   /books         -> 201 + Location header
-//   Update PATCH  /books/{id}    (partial update)
-//   Delete DELETE /books/{id}    -> 204 No Content
-
 const store = createStore(seedBooks);
 
 function register(r) {
-  // List
   r.get('/books', (_req, res) => res.json({ books: store.list() }));
 
-  // Get
   r.get('/books/:id', (req, res) => {
     const book = store.find(req.params.id);
     if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     res.json(book);
   });
 
-  // Create
   r.post('/books', (req, res) => {
     const id = store.newId();
     const book = {
@@ -42,22 +30,19 @@ function register(r) {
     res.status(201).location(`${r.base}/books/${id}`).json(book);
   });
 
-  // Update (partial) — PATCH は渡されたフィールドだけ変更する。id は不変。
   r.patch('/books/:id', (req, res) => {
     const book = store.find(req.params.id);
     if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
-    const { id, ...patch } = req.body;
+    const { id, ...patch } = req.body; // id は不変なので除外する
     Object.assign(book, patch);
     res.json(book);
   });
 
-  // Delete
   r.delete('/books/:id', (req, res) => {
     if (!store.remove(req.params.id)) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     res.status(204).end();
   });
 
-  // デモデータのリセット
   r.post('/_reset', (_req, res) => {
     store.reset();
     res.json({ reset: true, count: store.size });

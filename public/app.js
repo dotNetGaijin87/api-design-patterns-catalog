@@ -1,9 +1,5 @@
 'use strict';
 
-// UI は GET /api/_meta から完全にデータ駆動で構築される。各パターンは自身のカテゴリと
-// デモリクエストを宣言し、このスクリプトがカテゴリ別のナビを描画して、選ばれたパターンの
-// リクエストをライブ実行し、結果（最新の1件）を右側に表示する。
-
 let categories = [];
 let patterns = [];
 let active = null;
@@ -28,7 +24,6 @@ async function init() {
   if (patterns.length) select(patterns[0].id);
 }
 
-// テーマ切替・検索・クリアの配線。
 function wireChrome() {
   const toggle = $('#themeToggle');
   syncThemeIcon();
@@ -99,7 +94,6 @@ function applyOpenState() {
   }
 }
 
-// サイドバーの検索フィルタ。一致するパターンだけ表示し、該当カテゴリを開く。
 function applySearch(query) {
   const q = query.trim().toLowerCase();
   for (const group of document.querySelectorAll('.cat-group')) {
@@ -175,16 +169,14 @@ function resetConsole() {
   if (con) con.innerHTML = `<div class="console-empty">中央の「試す」からリクエストをクリックすると、ここに実行結果（リクエストとレスポンス）が表示されます。</div>`;
 }
 
-// --- リクエストを実行し、やり取りを描画する -------------------------------
-
 async function runRequest(req) {
   const con = $('#console');
-  con.innerHTML = ''; // 新しい呼び出しごとに、前回の結果をクリアして最新の1件だけを表示する。
+  con.innerHTML = ''; // 最新の1件だけを表示する
 
   const opts = {
     method: req.method,
     headers: { ...(req.headers || {}) },
-    cache: 'no-store' // ブラウザの HTTP キャッシュを介さず、304 をそのまま観測する。
+    cache: 'no-store' // ブラウザのキャッシュを介さず 304 をそのまま観測する
   };
   if (req.body !== undefined) {
     opts.headers['Content-Type'] = 'application/json';
@@ -212,13 +204,11 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   const card = document.createElement('div');
   card.className = 'exchange';
 
-  // リクエスト行
   const reqLine = document.createElement('div');
   reqLine.className = 'req-line';
   reqLine.innerHTML = `<span class="method ${req.method}">${req.method}</span><span class="path">${escapeHtml(req.path)}</span>`;
   card.appendChild(reqLine);
 
-  // リクエストのヘッダー／ボディ（あれば）
   if (req.headers || req.body !== undefined) {
     const meta = document.createElement('div');
     meta.className = 'req-meta';
@@ -241,7 +231,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     return card;
   }
 
-  // レスポンスのステータス行（2xx / 3xx / 4xx / 5xx で色分け）
   const cls = res.status < 300 ? 's2' : res.status < 400 ? 's3' : res.status < 500 ? 's4' : 's5';
   const resLine = document.createElement('div');
   resLine.className = 'res-line';
@@ -251,7 +240,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   resLine.innerHTML = statusHtml;
   card.appendChild(resLine);
 
-  // 注目すべきレスポンスヘッダー
   const interesting = ['Location', 'ETag', 'Last-Modified', 'Cache-Control', 'Idempotent-Replayed', 'Content-Type'];
   const shown = interesting.map((h) => [h, res.headers.get(h)]).filter(([, v]) => v);
   if (shown.length) {
@@ -261,7 +249,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     card.appendChild(hdr);
   }
 
-  // ボディ（Auth0 風のコードブロック: ヘッダーバー + コピー）
   const pretty = json !== null ? JSON.stringify(json, null, 2) : (bodyText || '');
   const block = document.createElement('div');
   block.className = 'code-block';
@@ -277,7 +264,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   block.appendChild(pre);
   card.appendChild(block);
 
-  // 次の操作
   const followups = buildFollowups(req, res, json);
   if (followups.length) {
     const wrap = document.createElement('div');
@@ -311,7 +297,7 @@ function copyButton(getText) {
   return btn;
 }
 
-// レスポンスに含まれる実際の HTTP/REST の慣習をもとに、自然な次の操作を提示する。
+// Location ヘッダーやページトークン、ETag など、レスポンスに応じた次の操作を提示する。
 function buildFollowups(req, res, json) {
   const out = [];
 
@@ -323,15 +309,12 @@ function buildFollowups(req, res, json) {
   }
 
   const etag = res.headers.get('ETag');
-  const alreadyConditional = req.headers && req.headers['If-None-Match'];
-  if (etag && !alreadyConditional) {
+  if (etag && !(req.headers && req.headers['If-None-Match'])) {
     out.push({ label: 'If-None-Match で再取得 → 304', request: { method: req.method, path: req.path, headers: { 'If-None-Match': etag } } });
   }
 
   return out;
 }
-
-// --- ヘルパー --------------------------------------------------------------
 
 function setQueryParam(path, key, value) {
   const url = new URL(path, window.location.origin);

@@ -4,10 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const categories = require('../categories');
 
-// パターンを自動検出する。src/patterns/ に { meta, demos, register } を export する
-// ファイルを置くだけで取り込まれる（registry を手で編集する必要はない）。
-// 並び順はカテゴリの定義順 → 同一カテゴリ内はファイル名順で安定させる。
-
+// patterns/ を自動検出する。並び順はカテゴリの定義順 → 同一カテゴリ内はファイル名順。
 const dir = path.join(__dirname, '..', 'patterns');
 const categoryOrder = new Map(categories.map((c, i) => [c.id, i]));
 

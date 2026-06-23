@@ -4,13 +4,6 @@ const { seedBooks } = require('../domain/books');
 const { createStore } = require('../domain/store');
 const { notFound, etag } = require('../core/http');
 
-// ---------------------------------------------------------------------------
-// Conditional Requests (ETag / If-None-Match -> 304 Not Modified)
-// ---------------------------------------------------------------------------
-// レスポンスに ETag（内容の指紋）を付ける。クライアントが次回 If-None-Match に
-// その ETag を載せて再取得し、内容が変わっていなければサーバーは 304 Not Modified を
-// 本文なしで返す。帯域を大きく節約できる。
-
 const store = createStore(seedBooks);
 
 function register(r) {
@@ -20,19 +13,14 @@ function register(r) {
 
     const tag = etag(book);
     res.set('ETag', tag);
-    res.set('Cache-Control', 'no-cache'); // キャッシュ可だが利用前に再検証する
+    res.set('Cache-Control', 'no-cache');
 
-    // クライアントが持つ ETag が最新と一致すれば、本文を送らず 304 を返す。
-    const ifNoneMatch = req.get('If-None-Match');
-    if (ifNoneMatch && ifNoneMatch === tag) {
-      return res.status(304).end();
-    }
+    // ETag が一致すれば内容は変わっていないので、本文を送らず 304 を返す。
+    if (req.get('If-None-Match') === tag) return res.status(304).end();
 
     res.json(book);
   });
 
-  // PATCH で内容を変えると ETag も変わる。古い If-None-Match では 304 にならず
-  // 200 で新しい内容が返る、という再検証の挙動を試せる。
   r.patch('/books/:id', (req, res) => {
     const book = store.find(req.params.id);
     if (!book) return notFound(res, `'${req.params.id}' の書籍は存在しません。`);

@@ -2,20 +2,12 @@
 
 const { notFound } = require('../core/http');
 
-// ---------------------------------------------------------------------------
-// Long-Running Operations (LRO)
-// ---------------------------------------------------------------------------
-// 1リクエストで終わらない処理（エクスポート、一括インポート、トランスコードなど）。
-// ブロックせず、ただちに 202 Accepted と、クライアントが done == true までポーリングできる
-// Operation リソースを返す。
-
-const DURATION_MS = 6000; // 疑似的な「エクスポート」は約6秒で完了する。
+const DURATION_MS = 6000;
 
 let operations = new Map();
 let nextOp = 1;
 
-// 進捗は経過時間から算出するので、バックグラウンドワーカーなしでもポーリングごとに
-// 最新のパーセンテージが得られる。base は downloadUrl を絶対パスにするため。
+// 進捗は経過時間から算出する（バックグラウンドワーカー不要）。base は downloadUrl を絶対URLにするため。
 function snapshot(op, base) {
   const elapsed = Date.now() - op.startedAt;
   const progress = Math.min(100, Math.round((elapsed / DURATION_MS) * 100));
@@ -24,13 +16,11 @@ function snapshot(op, base) {
     name: op.name,
     done,
     metadata: { progressPercent: progress, target: op.target },
-    // 結果は完了時にのみ現れる。
     response: done ? { downloadUrl: `${base}/downloads/${op.id}.json`, exported: op.target } : undefined
   };
 }
 
 function register(r) {
-  // 処理を開始する。
   r.post('/exports', (req, res) => {
     const id = String(nextOp++);
     const op = {
@@ -40,11 +30,9 @@ function register(r) {
       startedAt: Date.now()
     };
     operations.set(id, op);
-    // 202 Accepted + ポーリング先を指す Location ヘッダー。
     res.status(202).location(`${r.base}/operations/${id}`).json(snapshot(op, r.base));
   });
 
-  // Operation をポーリングする。
   r.get('/operations/:id', (req, res) => {
     const op = operations.get(req.params.id);
     if (!op) return notFound(res, `'${req.params.id}' のオペレーションは存在しません。`);

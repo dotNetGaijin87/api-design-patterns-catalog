@@ -3,22 +3,14 @@
 const { seedBooks } = require('../domain/books');
 const { createStore } = require('../domain/store');
 
-// ---------------------------------------------------------------------------
-// Idempotency / Request Deduplication
-// ---------------------------------------------------------------------------
-// POST は本来べき等ではない。レスポンスが失われた後にリトライすると「作成」が重複する。
-// Idempotency-Key ヘッダーにより、サーバーはリトライを認識し、二重に実行する代わりに
-// 元の結果を返せる。
-
 const store = createStore(seedBooks);
-let keyCache = new Map(); // Idempotency-Key -> 保存したレスポンスボディ
+let keyCache = new Map();
 
 function register(r) {
   r.post('/books', (req, res) => {
     const key = req.get('Idempotency-Key');
 
-    // リプレイ: 既知のキーなら、元の作成結果を返す。重複排除されたことが分かるように
-    // フラグを付ける。
+    // 同じキーの再送はリプレイ扱い: 再実行せず元の結果を返す。
     if (key && keyCache.has(key)) {
       return res.status(200).set('Idempotent-Replayed', 'true').json(keyCache.get(key));
     }

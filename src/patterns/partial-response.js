@@ -3,13 +3,7 @@
 const { seedBooks } = require('../domain/books');
 const { notFound } = require('../core/http');
 
-// ---------------------------------------------------------------------------
-// Partial Response (field masks)
-// ---------------------------------------------------------------------------
-// ?fields=id,title,author のように、返すフィールドをクライアントに選ばせる。
-// ペイロードを小さくし over-fetching を避ける、GraphQL の選択セットに相当する手法。
-
-const books = seedBooks(); // 読み取り専用
+const books = seedBooks();
 
 function pick(obj, fields) {
   if (!fields || fields.length === 0) return obj;

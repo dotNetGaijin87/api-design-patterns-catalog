@@ -4,23 +4,16 @@ const { seedBooks } = require('../domain/books');
 const { createStore } = require('../domain/store');
 const { notFound, error } = require('../core/http');
 
-// ---------------------------------------------------------------------------
-// Soft Deletion
-// ---------------------------------------------------------------------------
-// 削除はしばしば後悔を伴う。行を消す代わりに「削除済み」とマークする（トゥームストーン）:
-// List では既定で隠し、?showDeleted=true で取得可能にし、:undelete で復元できるようにする。
-
 const store = createStore(() => seedBooks().map((b) => ({ ...b, deleted: false })));
 
 function register(r) {
-  // List は、明示的に要求されない限りトゥームストーンを隠す。
   r.get('/books', (req, res) => {
     const showDeleted = req.query.showDeleted === 'true';
     const visible = store.list().filter((b) => showDeleted || !b.deleted);
     res.json({ showDeleted, totalSize: visible.length, books: visible });
   });
 
-  // ソフトデリート: フラグを立て、時刻を記録し、トゥームストーン（200）を返す。
+  // ソフトデリート: 消さずに削除済みとして印を付け、トゥームストーンを 200 で返す。
   r.delete('/books/:id', (req, res) => {
     const book = store.find(req.params.id);
     if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
@@ -29,8 +22,7 @@ function register(r) {
     res.json(book);
   });
 
-  // 復元: ソフトデリートが存在する理由そのものの操作。AIP のカスタムメソッドはコロンを使う:
-  // POST /books/{id}:undelete。末尾セグメント全体を受け取り、自前で動詞を切り出す。
+  // AIP のカスタムメソッド POST /books/{id}:undelete を自前で分解する。
   r.post('/books/:resource', (req, res) => {
     const [id, verb] = req.params.resource.split(':');
     if (verb !== 'undelete') return error(res, 400, 'BAD_VERB', `未知のカスタムメソッド ':${verb || ''}' です。`);

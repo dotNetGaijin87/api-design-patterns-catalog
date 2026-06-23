@@ -1,8 +1,4 @@
-/* ============================================================================
-   Auth0-docs-inspired theme: clean light UI, indigo accent, dark code samples,
-   left documentation nav, and a light/dark toggle.
-   Light is the default; [data-theme="dark"] overrides the variables.
-   ============================================================================ */
+/* Auth0 ドキュメント風テーマ。ライトが既定で、[data-theme="dark"] が変数を上書きする。 */
 
 :root {
   --bg: #ffffff;
@@ -15,12 +11,12 @@
   --line: #e8eaef;
   --line-2: #dde0e7;
 
-  --accent: #635dff;          /* Auth0 indigo */
+  --accent: #635dff;
   --accent-strong: #4f46e5;
   --accent-soft: #efeefe;
   --accent-glow: rgba(99, 93, 255, 0.30);
 
-  /* Code samples stay dark in both themes (Auth0 keeps them dark on light). */
+  /* コードサンプルは両テーマで暗いままにする。 */
   --code-bg: #211d3b;
   --code-bar: #2b2650;
   --code-ink: #e7e3ff;
@@ -90,7 +86,6 @@ html[data-theme="dark"] body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
 
-/* ---- Top bar ---- */
 .topbar {
   flex: none;
   display: flex;
@@ -139,7 +134,6 @@ html[data-theme="dark"] body {
 }
 .icon-btn:hover { background: var(--panel-2); border-color: var(--muted); }
 
-/* ---- Layout ---- */
 .layout {
   flex: 1; min-height: 0;
   display: grid;
@@ -148,7 +142,6 @@ html[data-theme="dark"] body {
 .sidebar { border-right: 1px solid var(--line); background: var(--bg-2); overflow-y: auto; padding: 18px 12px; }
 .sidebar-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 4px 12px 14px; }
 
-/* ---- Category accordion (Auth0-style doc tree) ---- */
 .pattern-list { display: flex; flex-direction: column; gap: 2px; }
 .cat-header {
   width: 100%; display: flex; align-items: center; gap: 8px;
@@ -179,7 +172,6 @@ html[data-theme="dark"] body {
 }
 .pattern-item .pi-sub { display: block; font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; line-height: 1.45; }
 
-/* ---- Detail (doc article) ---- */
 .detail { overflow-y: auto; padding: 30px 40px 60px; }
 .detail > * { max-width: 860px; }
 .loading { color: var(--muted); }
@@ -215,7 +207,6 @@ html[data-theme="dark"] body {
 .demo-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .demo-btn:active { transform: translateY(1px); }
 
-/* Method pills */
 .method { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 6px; }
 .method.GET { color: var(--get); background: var(--get-bg); }
 .method.POST { color: var(--post); background: var(--post-bg); }
@@ -223,7 +214,6 @@ html[data-theme="dark"] body {
 .method.PUT { color: var(--patch); background: var(--patch-bg); }
 .method.DELETE { color: var(--delete); background: var(--delete-bg); }
 
-/* ---- Right column: live request/response ---- */
 .console-pane { border-left: 1px solid var(--line); background: var(--bg-2); display: flex; flex-direction: column; overflow: hidden; }
 .console-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--panel); }
 .console-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0; }
@@ -256,7 +246,6 @@ html[data-theme="dark"] body {
 .res-headers { padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .res-headers b { color: var(--ink); font-weight: 600; }
 
-/* Code sample block (Auth0-style: dark, header bar, copy button) */
 .code-block { background: var(--code-bg); }
 .code-bar {
   display: flex; align-items: center; justify-content: space-between;
@@ -285,7 +274,6 @@ pre.body {
 }
 .follow-btn:hover { box-shadow: 0 0 0 3px var(--accent-soft); }
 
-/* Narrow screens: stack the three columns. */
 @media (max-width: 1024px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar, .detail, .console-pane { overflow: visible; }

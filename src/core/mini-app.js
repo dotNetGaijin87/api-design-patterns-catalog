@@ -1,14 +1,7 @@
 'use strict';
 
-// A tiny, zero-dependency, Express-flavoured app built on Node's http module.
-//
-// It implements just enough of the Express surface that the pattern modules
-// use — get/post/patch/delete, :params, req.query / req.body / req.get, and a
-// chainable res.status().location().set().json() — so the project runs with a
-// bare `node server.js` and no npm install. app.scope(base) returns a router
-// whose routes are all mounted under `base`, which lets each pattern register
-// relative paths ('/books') without repeating its '/api/<id>' prefix.
-// This is deliberately NOT a general web framework.
+// Node の http の上に作った、ごく小さな Express 風アプリ（依存ゼロ）。
+// app.scope(base) は base 配下にルートをまとめて登録するルーターを返す。
 
 const http = require('http');
 const fs = require('fs');
@@ -25,14 +18,13 @@ const MIME = {
 };
 
 function createApp() {
-  const routes = []; // { method, segments, handler }
+  const routes = [];
   let staticDir = null;
 
   function add(method, pattern, handler) {
     routes.push({ method, segments: pattern.split('/').filter(Boolean), handler });
   }
 
-  // Match a request path against a route pattern, capturing :params.
   function match(routeSegs, urlSegs) {
     if (routeSegs.length !== urlSegs.length) return null;
     const params = {};
@@ -51,7 +43,6 @@ function createApp() {
     const parsed = new URL(rawReq.url, 'http://localhost');
     const urlSegs = parsed.pathname.split('/').filter(Boolean);
 
-    // Collect the body, then dispatch.
     let raw = '';
     rawReq.on('data', (chunk) => (raw += chunk));
     rawReq.on('end', () => {
@@ -70,7 +61,6 @@ function createApp() {
         }
       }
 
-      // Fall through to static files for GET requests.
       if (rawReq.method === 'GET' && staticDir && serveStatic(staticDir, parsed.pathname, res)) return;
 
       res.status(404).json({ error: { code: 'NOT_FOUND', message: `No route for ${rawReq.method} ${parsed.pathname}` } });
@@ -83,7 +73,6 @@ function createApp() {
     put: (p, h) => add('PUT', p, h),
     patch: (p, h) => add('PATCH', p, h),
     delete: (p, h) => add('DELETE', p, h),
-    // A router scoped to `base`: every route it registers is prefixed with it.
     scope: (base) => ({
       base,
       get: (p, h) => add('GET', base + p, h),
@@ -152,8 +141,7 @@ function buildRes(rawRes) {
 function serveStatic(dir, urlPath, res) {
   const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
   const full = path.join(dir, rel);
-  // Guard against path traversal outside the static dir.
-  if (!full.startsWith(path.resolve(dir))) return false;
+  if (!full.startsWith(path.resolve(dir))) return false; // ディレクトリ外への参照を防ぐ
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
 
   const type = MIME[path.extname(full).toLowerCase()] || 'application/octet-stream';

@@ -2,13 +2,7 @@
 
 const { seedBooks, CATEGORIES } = require('../domain/books');
 
-// ---------------------------------------------------------------------------
-// Filtering
-// ---------------------------------------------------------------------------
-// クエリパラメータでコレクションを絞り込む。条件は AND で結合し、適用したフィルタを
-// レスポンスに echo して自己説明的にする。
-
-const books = seedBooks(); // 読み取り専用
+const books = seedBooks();
 
 function register(r) {
   r.get('/books', (req, res) => {

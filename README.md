@@ -3,38 +3,25 @@
 よく使われる **Web API のデザインパターン** を、それぞれ実際に動作する HTTP エンドポイント
 として体験できる、小さく実行可能なリファレンスです。左の一覧からパターンを選び、リクエストを
 クリックすると、右側のコンソールに「リクエスト・レスポンス（ステータス・ヘッダー・ボディ）・
-妥当な次の操作（`Location` をたどる、ページトークンを追う）」が表示されます。画面をスクロール
-しなくても結果が確認できます。
+妥当な次の操作（`Location` をたどる、ページトークンを追う）」が表示されます。
 
-例として扱うリソースは、よく知られた日本の書籍の小さなカタログです。パターンを示すための
-馴染みのある中立的なドメインとして使っているだけです。
+**▶ ライブデモ（StackBlitz・インストール不要、ブラウザ上で実行）:**
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
 
 ![patterns](https://img.shields.io/badge/patterns-13-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
-## スクリーンショット
+## ライブデモ / スクリーンショット
 
-「条件付きリクエスト（ETag / 304）」で **内容を更新（PATCH）** を実行した直後の様子。レスポンスに更新後の `ETag` と `Last-Modified` が付き、本文が返ります。
+下の画像をクリックすると、**StackBlitz でそのままライブ実行**できます（ブラウザ内で Node サーバーが起動します）。「条件付きリクエスト（ETag / 304）」で **内容を更新（PATCH）** を実行した直後の様子で、レスポンスに更新後の `ETag` と `Last-Modified` が付きます。
 
-![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)
+[![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
 
 ## クイックスタート
 
 ```bash
-npm start            # 依存関係なし — npm install は不要
-# http://localhost:3000 を開く
+npm start # http://localhost:3000 を開く
 ```
-
-**依存パッケージはありません。** サーバーは Node 標準の `http` モジュールを、小さな
-Express 風シム（[src/core/mini-app.js](src/core/mini-app.js)）経由で利用するため、`npm install`
-は不要です。Node ≥ 18 が必要です。
-
-ポート 3000 が使用中の場合は、別のポートを指定します:
-
-```bash
-PORT=5050 npm start
-```
-
-編集中の自動リロードには `npm run dev`（Node 標準の `--watch`）を使ってください。
 
 ## 含まれるパターン
 

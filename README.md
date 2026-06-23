@@ -7,13 +7,13 @@
 
 **▶ ライブデモ（StackBlitz）:**
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog/tree/main)
 
 ![patterns](https://img.shields.io/badge/patterns-13-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
 ## ライブデモ / スクリーンショット
 
-[![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
+[![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog/tree/main)
 
 ## クイックスタート
 

@@ -264,7 +264,7 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   resHead.innerHTML = headHtml;
   resPanel.appendChild(resHead);
 
-  const interesting = ['Location', 'ETag', 'Last-Modified', 'Cache-Control', 'WWW-Authenticate', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset', 'Retry-After', 'Idempotent-Replayed', 'Content-Type'];
+  const interesting = ['Location', 'ETag', 'Last-Modified', 'Cache-Control', 'WWW-Authenticate', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset', 'Retry-After', 'Strict-Transport-Security', 'X-Content-Type-Options', 'Content-Security-Policy', 'X-Frame-Options', 'Referrer-Policy', 'Permissions-Policy', 'Cross-Origin-Resource-Policy', 'Idempotent-Replayed', 'Content-Type'];
   const shown = interesting.map((h) => [h, res.headers.get(h)]).filter(([, v]) => v);
   if (shown.length) {
     const hdr = document.createElement('div');

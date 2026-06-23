@@ -1,6 +1,8 @@
 'use strict';
 
-const { seedBooks } = require('../data');
+const { seedBooks } = require('../domain/books');
+const { createStore } = require('../domain/store');
+const { notFound } = require('../core/http');
 
 // ---------------------------------------------------------------------------
 // Standard Methods (List / Get / Create / Update / Delete)
@@ -11,27 +13,22 @@ const { seedBooks } = require('../data');
 //   Update PATCH  /books/{id}    (partial update)
 //   Delete DELETE /books/{id}    -> 204 No Content
 
-let books = seedBooks();
-let nextId = books.length + 1;
+const store = createStore(seedBooks);
 
-const BASE = '/api/standard-methods';
-
-function register(app) {
+function register(r) {
   // List
-  app.get(`${BASE}/books`, (_req, res) => {
-    res.json({ books });
-  });
+  r.get('/books', (_req, res) => res.json({ books: store.list() }));
 
   // Get
-  app.get(`${BASE}/books/:id`, (req, res) => {
-    const book = books.find((b) => b.id === req.params.id);
-    if (!book) return notFound(res, req.params.id);
+  r.get('/books/:id', (req, res) => {
+    const book = store.find(req.params.id);
+    if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     res.json(book);
   });
 
   // Create
-  app.post(`${BASE}/books`, (req, res) => {
-    const id = `book-${String(nextId++).padStart(2, '0')}`;
+  r.post('/books', (req, res) => {
+    const id = store.newId();
     const book = {
       id,
       title: req.body.title || '無題',
@@ -41,38 +38,30 @@ function register(app) {
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
-    books.push(book);
-    res.status(201).location(`${BASE}/books/${id}`).json(book);
+    store.add(book);
+    res.status(201).location(`${r.base}/books/${id}`).json(book);
   });
 
-  // Update (partial)
-  app.patch(`${BASE}/books/:id`, (req, res) => {
-    const book = books.find((b) => b.id === req.params.id);
-    if (!book) return notFound(res, req.params.id);
-    // PATCH = 渡されたフィールドだけ変更する。id は不変。
+  // Update (partial) — PATCH は渡されたフィールドだけ変更する。id は不変。
+  r.patch('/books/:id', (req, res) => {
+    const book = store.find(req.params.id);
+    if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     const { id, ...patch } = req.body;
     Object.assign(book, patch);
     res.json(book);
   });
 
   // Delete
-  app.delete(`${BASE}/books/:id`, (req, res) => {
-    const idx = books.findIndex((b) => b.id === req.params.id);
-    if (idx === -1) return notFound(res, req.params.id);
-    books.splice(idx, 1);
+  r.delete('/books/:id', (req, res) => {
+    if (!store.remove(req.params.id)) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     res.status(204).end();
   });
 
   // デモデータのリセット
-  app.post(`${BASE}/_reset`, (_req, res) => {
-    books = seedBooks();
-    nextId = books.length + 1;
-    res.json({ reset: true, count: books.length });
+  r.post('/_reset', (_req, res) => {
+    store.reset();
+    res.json({ reset: true, count: store.size });
   });
-}
-
-function notFound(res, id) {
-  res.status(404).json({ error: { code: 'NOT_FOUND', message: `id '${id}' の書籍は存在しません。` } });
 }
 
 module.exports = {
@@ -90,23 +79,18 @@ module.exports = {
       '204 No Content を返します。「存在しないID」を試すと、構造化された 404 エラーのボディを確認できます。'
   },
   demos: [
-    { label: '書籍を一覧取得', method: 'GET', path: `${BASE}/books` },
-    { label: '書籍を1件取得', method: 'GET', path: `${BASE}/books/book-01` },
-    { label: '存在しないID → 404', method: 'GET', path: `${BASE}/books/book-999` },
+    { label: '書籍を一覧取得', method: 'GET', path: '/books' },
+    { label: '書籍を1件取得', method: 'GET', path: '/books/book-01' },
+    { label: '存在しないID → 404', method: 'GET', path: '/books/book-999' },
     {
       label: '書籍を作成 → 201',
       method: 'POST',
-      path: `${BASE}/books`,
+      path: '/books',
       body: { title: '門', author: '夏目漱石', year: 1910, category: '純文学', pages: 240, rating: 4.1 }
     },
-    {
-      label: '書籍を更新（PATCH）',
-      method: 'PATCH',
-      path: `${BASE}/books/book-01`,
-      body: { rating: 5.0 }
-    },
-    { label: '書籍を削除 → 204', method: 'DELETE', path: `${BASE}/books/book-16` },
-    { label: 'デモデータをリセット', method: 'POST', path: `${BASE}/_reset` }
+    { label: '書籍を更新（PATCH）', method: 'PATCH', path: '/books/book-01', body: { rating: 5.0 } },
+    { label: '書籍を削除 → 204', method: 'DELETE', path: '/books/book-16' },
+    { label: 'デモデータをリセット', method: 'POST', path: '/_reset' }
   ],
   register
 };

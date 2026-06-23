@@ -45,15 +45,23 @@ PORT=5050 npm start
 ## 構成
 
 ```
-server.js              HTTP サーバー: UI を配信し、全パターンをマウントする
+server.js              HTTP サーバー: 各パターンを /api/<id> にマウントし UI を配信
 src/
-  data.js              共有シードデータ（書籍カタログ）＋ デモごとのコピー
-  registry.js          パターンモジュールの順序付きリスト
-  patterns/*.js        パターンごとに 1 つの自己完結したモジュール
+  core/                フレームワークと配線
+    mini-app.js        Node http の上の極小 Express 風シム（app.scope で名前空間ルーター）
+    registry.js        patterns/ を自動検出（カテゴリ順 → ファイル名順）
+    catalog.js         /api/_meta のペイロードを組み立てる
+    http.js            共通ヘルパー: notFound() / error() / etag()
+  domain/              共有ドメイン
+    books.js           シードデータ（書籍カタログ）
+    store.js           再利用可能なインメモリ・リポジトリ
+  patterns/            パターンごとに 1 ファイル（相対パスのルートのみ）
+    standard-methods.js …
+  categories.js        カテゴリ定義（UI の並び順）
 public/
   index.html           プレイグラウンドの土台（3 カラムレイアウト）
   app.js               データ駆動の UI: /api/_meta を読み、リクエストをライブ実行
-  style.css            スタイル
+  style.css            スタイル（ダークテーマ）
 ```
 
 画面は 3 カラム構成です。**左**: パターン一覧、**中央**: 解説とデモ用リクエスト、
@@ -65,15 +73,19 @@ API が公開する内容をそのまま描画します。
 
 ### 新しいパターンの追加
 
-`src/patterns/<name>.js` を作成して `{ meta, demos, register }` を export し、
-`src/registry.js` の配列に加えるだけです。サーバーがルートをマウントし、UI も自動的に
-取り込みます。ほかに変更は要りません。
+`src/patterns/<name>.js` を作成して `{ meta, demos, register }` を export する**だけ**です。
+`registry.js` が自動検出し、サーバーが `/api/<id>` にマウントし、UI も取り込みます。
+登録リストへの追記は不要です。`register` は名前空間付きルーター（相対パス）を受け取り、
+`demos[].path` も相対パスで書きます。
 
 ```js
 module.exports = {
-  meta: { id, title, blurb, docs },
-  demos: [{ label, method, path, headers?, body? }],
-  register(app) { app.get('/api/<name>/...', handler); }
+  meta: { id, category, title, blurb, docs },        // category は categories.js の id
+  demos: [{ label, method, path, headers?, body? }], // path は '/books' のように相対
+  register(r) {                                      // r は /api/<id> にスコープ済み
+    r.get('/books', (req, res) => res.json({ books: store.list() }));
+    // 絶対パスが必要なら r.base（= '/api/<id>'）を使う
+  }
 };
 ```
 

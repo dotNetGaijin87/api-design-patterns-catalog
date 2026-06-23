@@ -1,6 +1,8 @@
 'use strict';
 
-const { seedBooks } = require('../data');
+const { seedBooks } = require('../domain/books');
+const { createStore } = require('../domain/store');
+const { notFound, error } = require('../core/http');
 
 // ---------------------------------------------------------------------------
 // Soft Deletion
@@ -8,21 +10,20 @@ const { seedBooks } = require('../data');
 // 削除はしばしば後悔を伴う。行を消す代わりに「削除済み」とマークする（トゥームストーン）:
 // List では既定で隠し、?showDeleted=true で取得可能にし、:undelete で復元できるようにする。
 
-let books = seedBooks().map((b) => ({ ...b, deleted: false }));
-const BASE = '/api/soft-deletion';
+const store = createStore(() => seedBooks().map((b) => ({ ...b, deleted: false })));
 
-function register(app) {
+function register(r) {
   // List は、明示的に要求されない限りトゥームストーンを隠す。
-  app.get(`${BASE}/books`, (req, res) => {
+  r.get('/books', (req, res) => {
     const showDeleted = req.query.showDeleted === 'true';
-    const visible = books.filter((b) => showDeleted || !b.deleted);
+    const visible = store.list().filter((b) => showDeleted || !b.deleted);
     res.json({ showDeleted, totalSize: visible.length, books: visible });
   });
 
   // ソフトデリート: フラグを立て、時刻を記録し、トゥームストーン（200）を返す。
-  app.delete(`${BASE}/books/:id`, (req, res) => {
-    const book = books.find((b) => b.id === req.params.id);
-    if (!book) return notFound(res, req.params.id);
+  r.delete('/books/:id', (req, res) => {
+    const book = store.find(req.params.id);
+    if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);
     book.deleted = true;
     book.deleteTime = new Date().toISOString();
     res.json(book);
@@ -30,26 +31,20 @@ function register(app) {
 
   // 復元: ソフトデリートが存在する理由そのものの操作。AIP のカスタムメソッドはコロンを使う:
   // POST /books/{id}:undelete。末尾セグメント全体を受け取り、自前で動詞を切り出す。
-  app.post(`${BASE}/books/:resource`, (req, res) => {
+  r.post('/books/:resource', (req, res) => {
     const [id, verb] = req.params.resource.split(':');
-    if (verb !== 'undelete') {
-      return res.status(400).json({ error: { code: 'BAD_VERB', message: `未知のカスタムメソッド ':${verb || ''}' です。` } });
-    }
-    const book = books.find((b) => b.id === id);
-    if (!book) return notFound(res, id);
+    if (verb !== 'undelete') return error(res, 400, 'BAD_VERB', `未知のカスタムメソッド ':${verb || ''}' です。`);
+    const book = store.find(id);
+    if (!book) return notFound(res, `id '${id}' の書籍は存在しません。`);
     book.deleted = false;
     delete book.deleteTime;
     res.json(book);
   });
 
-  app.post(`${BASE}/_reset`, (_req, res) => {
-    books = seedBooks().map((b) => ({ ...b, deleted: false }));
-    res.json({ reset: true, count: books.length });
+  r.post('/_reset', (_req, res) => {
+    store.reset();
+    res.json({ reset: true, count: store.size });
   });
-}
-
-function notFound(res, id) {
-  res.status(404).json({ error: { code: 'NOT_FOUND', message: `id '${id}' の書籍は存在しません。` } });
 }
 
 module.exports = {
@@ -68,12 +63,12 @@ module.exports = {
       'ください。トゥームストーンはまだ存在しています。'
   },
   demos: [
-    { label: '1. 一覧（既定）', method: 'GET', path: `${BASE}/books` },
-    { label: '2. book-09 を削除', method: 'DELETE', path: `${BASE}/books/book-09` },
-    { label: '3. 一覧（book-09 は非表示）', method: 'GET', path: `${BASE}/books` },
-    { label: '4. 一覧（showDeleted=true）', method: 'GET', path: `${BASE}/books?showDeleted=true` },
-    { label: '5. book-09 を復元', method: 'POST', path: `${BASE}/books/book-09:undelete` },
-    { label: 'デモデータをリセット', method: 'POST', path: `${BASE}/_reset` }
+    { label: '1. 一覧（既定）', method: 'GET', path: '/books' },
+    { label: '2. book-09 を削除', method: 'DELETE', path: '/books/book-09' },
+    { label: '3. 一覧（book-09 は非表示）', method: 'GET', path: '/books' },
+    { label: '4. 一覧（showDeleted=true）', method: 'GET', path: '/books?showDeleted=true' },
+    { label: '5. book-09 を復元', method: 'POST', path: '/books/book-09:undelete' },
+    { label: 'デモデータをリセット', method: 'POST', path: '/_reset' }
   ],
   register
 };

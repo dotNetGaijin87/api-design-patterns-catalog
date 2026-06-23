@@ -1,24 +1,23 @@
 'use strict';
 
 const path = require('path');
-const { createApp } = require('./src/lib/mini-app');
-const patterns = require('./src/registry');
+const { createApp } = require('./src/core/mini-app');
+const { buildCatalog } = require('./src/core/catalog');
+const patterns = require('./src/core/registry');
 const categories = require('./src/categories');
 
 const app = createApp();
 
-// Let every pattern register its own routes on the app. By convention each
-// pattern owns the URL namespace /api/<pattern-id>/... so demos are isolated.
-patterns.forEach((pattern) => pattern.register(app));
+// Each pattern registers its routes on a router scoped to /api/<id>, so the
+// pattern code only deals in relative paths ('/books').
+for (const pattern of patterns) {
+  pattern.register(app.scope(`/api/${pattern.meta.id}`));
+}
 
-// Drives the UI: the catalog of patterns plus the demo requests for each.
-// The frontend is entirely data-driven from this single endpoint.
-app.get('/api/_meta', (_req, res) => {
-  res.json({
-    categories,
-    patterns: patterns.map((p) => ({ ...p.meta, demos: p.demos }))
-  });
-});
+// Drives the UI: the catalog of categories + patterns (with their demo
+// requests). Built once; the metadata is static.
+const catalog = buildCatalog(patterns, categories);
+app.get('/api/_meta', (_req, res) => res.json(catalog));
 
 // Serve the static UI from /public (anything not matched by a route above).
 app.static(path.join(__dirname, 'public'));

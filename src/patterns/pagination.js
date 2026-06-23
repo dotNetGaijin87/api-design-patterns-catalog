@@ -1,6 +1,6 @@
 'use strict';
 
-const { seedBooks } = require('../data');
+const { seedBooks } = require('../domain/books');
 
 // ---------------------------------------------------------------------------
 // Pagination (opaque cursor / page tokens)
@@ -8,10 +8,9 @@ const { seedBooks } = require('../data');
 // 無制限のリストは返さない。1ページ分と不透明な nextPageToken を返し、クライアントは
 // それを送り返して次ページを取得する。
 
-const books = seedBooks();
+const books = seedBooks(); // 読み取り専用
 const DEFAULT_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 50;
-const BASE = '/api/pagination';
 
 // トークンは「次のインデックス」をエンコードしているだけだが、base64url の不透明な値なので
 // クライアントは中身を解釈せず、不透明な文字列として扱わなければならない。
@@ -21,8 +20,8 @@ const decodeToken = (token) => {
   return Number.isInteger(n) && n >= 0 ? n : 0;
 };
 
-function register(app) {
-  app.get(`${BASE}/books`, (req, res) => {
+function register(r) {
+  r.get('/books', (req, res) => {
     let pageSize = parseInt(req.query.pageSize, 10) || DEFAULT_PAGE_SIZE;
     pageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
 
@@ -54,8 +53,8 @@ module.exports = {
       '最初のデモを実行し、表示される「次のページ →」ボタンでカーソルをたどってみてください。'
   },
   demos: [
-    { label: '最初のページ（pageSize=5）', method: 'GET', path: `${BASE}/books?pageSize=5` },
-    { label: '小さなページ（pageSize=2）', method: 'GET', path: `${BASE}/books?pageSize=2` }
+    { label: '最初のページ（pageSize=5）', method: 'GET', path: '/books?pageSize=5' },
+    { label: '小さなページ（pageSize=2）', method: 'GET', path: '/books?pageSize=2' }
   ],
   register
 };

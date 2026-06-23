@@ -3,10 +3,12 @@
 // A tiny, zero-dependency, Express-flavoured app built on Node's http module.
 //
 // It implements just enough of the Express surface that the pattern modules
-// use — app.get/post/patch/delete, :params, req.query / req.body / req.get,
-// and a chainable res.status().location().set().json() — so the project runs
-// with a bare `node server.js` and no npm install. This is deliberately NOT a
-// general web framework; it's the smallest thing that makes the demos work.
+// use — get/post/patch/delete, :params, req.query / req.body / req.get, and a
+// chainable res.status().location().set().json() — so the project runs with a
+// bare `node server.js` and no npm install. app.scope(base) returns a router
+// whose routes are all mounted under `base`, which lets each pattern register
+// relative paths ('/books') without repeating its '/api/<id>' prefix.
+// This is deliberately NOT a general web framework.
 
 const http = require('http');
 const fs = require('fs');
@@ -81,6 +83,15 @@ function createApp() {
     put: (p, h) => add('PUT', p, h),
     patch: (p, h) => add('PATCH', p, h),
     delete: (p, h) => add('DELETE', p, h),
+    // A router scoped to `base`: every route it registers is prefixed with it.
+    scope: (base) => ({
+      base,
+      get: (p, h) => add('GET', base + p, h),
+      post: (p, h) => add('POST', base + p, h),
+      put: (p, h) => add('PUT', base + p, h),
+      patch: (p, h) => add('PATCH', base + p, h),
+      delete: (p, h) => add('DELETE', base + p, h)
+    }),
     static: (dir) => { staticDir = dir; },
     listen: (port, cb) => {
       server.on('error', (err) => {

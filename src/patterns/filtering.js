@@ -1,6 +1,6 @@
 'use strict';
 
-const { seedBooks, CATEGORIES } = require('../data');
+const { seedBooks, CATEGORIES } = require('../domain/books');
 
 // ---------------------------------------------------------------------------
 // Filtering
@@ -8,11 +8,10 @@ const { seedBooks, CATEGORIES } = require('../data');
 // クエリパラメータでコレクションを絞り込む。条件は AND で結合し、適用したフィルタを
 // レスポンスに echo して自己説明的にする。
 
-const books = seedBooks();
-const BASE = '/api/filtering';
+const books = seedBooks(); // 読み取り専用
 
-function register(app) {
-  app.get(`${BASE}/books`, (req, res) => {
+function register(r) {
+  r.get('/books', (req, res) => {
     const { author, category, minYear, maxYear, q } = req.query;
 
     const applied = {};
@@ -57,11 +56,11 @@ module.exports = {
       '自己説明的でデバッグしやすくなります。利用可能なジャンル: ' + CATEGORIES.join('、') + '。'
   },
   demos: [
-    { label: 'ジャンル＝ミステリー', method: 'GET', path: `${BASE}/books?category=ミステリー` },
-    { label: '2015年以降の純文学', method: 'GET', path: `${BASE}/books?category=純文学&minYear=2015` },
-    { label: 'タイトルに「人間」を含む', method: 'GET', path: `${BASE}/books?q=人間` },
-    { label: '著者で絞り込み（村上）', method: 'GET', path: `${BASE}/books?author=村上` },
-    { label: 'フィルタなし（全件）', method: 'GET', path: `${BASE}/books` }
+    { label: 'ジャンル＝ミステリー', method: 'GET', path: '/books?category=ミステリー' },
+    { label: '2015年以降の純文学', method: 'GET', path: '/books?category=純文学&minYear=2015' },
+    { label: 'タイトルに「人間」を含む', method: 'GET', path: '/books?q=人間' },
+    { label: '著者で絞り込み（村上）', method: 'GET', path: '/books?author=村上' },
+    { label: 'フィルタなし（全件）', method: 'GET', path: '/books' }
   ],
   register
 };

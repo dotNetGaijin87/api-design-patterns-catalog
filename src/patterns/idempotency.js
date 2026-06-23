@@ -1,6 +1,7 @@
 'use strict';
 
-const { seedBooks } = require('../data');
+const { seedBooks } = require('../domain/books');
+const { createStore } = require('../domain/store');
 
 // ---------------------------------------------------------------------------
 // Idempotency / Request Deduplication
@@ -9,26 +10,20 @@ const { seedBooks } = require('../data');
 // Idempotency-Key ヘッダーにより、サーバーはリトライを認識し、二重に実行する代わりに
 // 元の結果を返せる。
 
-let books = seedBooks();
-let nextId = books.length + 1;
+const store = createStore(seedBooks);
 let keyCache = new Map(); // Idempotency-Key -> 保存したレスポンスボディ
 
-const BASE = '/api/idempotency';
-
-function register(app) {
-  app.post(`${BASE}/books`, (req, res) => {
+function register(r) {
+  r.post('/books', (req, res) => {
     const key = req.get('Idempotency-Key');
 
     // リプレイ: 既知のキーなら、元の作成結果を返す。重複排除されたことが分かるように
     // フラグを付ける。
     if (key && keyCache.has(key)) {
-      return res
-        .status(200)
-        .set('Idempotent-Replayed', 'true')
-        .json(keyCache.get(key));
+      return res.status(200).set('Idempotent-Replayed', 'true').json(keyCache.get(key));
     }
 
-    const id = `book-${String(nextId++).padStart(2, '0')}`;
+    const id = store.newId();
     const book = {
       id,
       title: req.body.title || '無題',
@@ -38,21 +33,18 @@ function register(app) {
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
-    books.push(book);
+    store.add(book);
 
     if (key) keyCache.set(key, book);
-    res.status(201).location(`${BASE}/books/${id}`).json(book);
+    res.status(201).location(`${r.base}/books/${id}`).json(book);
   });
 
-  app.get(`${BASE}/books`, (_req, res) => {
-    res.json({ totalSize: books.length, books });
-  });
+  r.get('/books', (_req, res) => res.json({ totalSize: store.size, books: store.list() }));
 
-  app.post(`${BASE}/_reset`, (_req, res) => {
-    books = seedBooks();
-    nextId = books.length + 1;
+  r.post('/_reset', (_req, res) => {
+    store.reset();
     keyCache = new Map();
-    res.json({ reset: true, count: books.length });
+    res.json({ reset: true, count: store.size });
   });
 }
 
@@ -75,26 +67,26 @@ module.exports = {
     {
       label: '作成（key=abc-123）',
       method: 'POST',
-      path: `${BASE}/books`,
+      path: '/books',
       headers: { 'Idempotency-Key': 'abc-123' },
       body: { title: '坊っちゃん', author: '夏目漱石', year: 1906, category: '純文学' }
     },
     {
       label: '再実行（key=abc-123）→ リプレイ',
       method: 'POST',
-      path: `${BASE}/books`,
+      path: '/books',
       headers: { 'Idempotency-Key': 'abc-123' },
       body: { title: '坊っちゃん', author: '夏目漱石', year: 1906, category: '純文学' }
     },
     {
       label: '作成（key=xyz-789）→ 新規',
       method: 'POST',
-      path: `${BASE}/books`,
+      path: '/books',
       headers: { 'Idempotency-Key': 'xyz-789' },
       body: { title: '砂の女', author: '安部公房', year: 1962, category: '純文学' }
     },
-    { label: '書籍を一覧取得', method: 'GET', path: `${BASE}/books` },
-    { label: 'デモデータをリセット', method: 'POST', path: `${BASE}/_reset` }
+    { label: '書籍を一覧取得', method: 'GET', path: '/books' },
+    { label: 'デモデータをリセット', method: 'POST', path: '/_reset' }
   ],
   register
 };

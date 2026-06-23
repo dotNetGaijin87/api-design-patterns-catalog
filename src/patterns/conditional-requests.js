@@ -1,7 +1,8 @@
 'use strict';
 
-const crypto = require('crypto');
-const { seedBooks } = require('../data');
+const { seedBooks } = require('../domain/books');
+const { createStore } = require('../domain/store');
+const { notFound, etag } = require('../core/http');
 
 // ---------------------------------------------------------------------------
 // Conditional Requests (ETag / If-None-Match -> 304 Not Modified)
@@ -10,26 +11,20 @@ const { seedBooks } = require('../data');
 // その ETag を載せて再取得し、内容が変わっていなければサーバーは 304 Not Modified を
 // 本文なしで返す。帯域を大きく節約できる。
 
-const books = seedBooks();
-const BASE = '/api/conditional-requests';
+const store = createStore(seedBooks);
 
-// 内容から強い ETag を計算する（リソースが変わればハッシュも変わる）。
-const etagFor = (obj) => '"' + crypto.createHash('sha1').update(JSON.stringify(obj)).digest('base64').slice(0, 16) + '"';
+function register(r) {
+  r.get('/books/:id', (req, res) => {
+    const book = store.find(req.params.id);
+    if (!book) return notFound(res, `'${req.params.id}' の書籍は存在しません。`);
 
-function register(app) {
-  app.get(`${BASE}/books/:id`, (req, res) => {
-    const book = books.find((b) => b.id === req.params.id);
-    if (!book) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', message: `'${req.params.id}' の書籍は存在しません。` } });
-    }
-
-    const etag = etagFor(book);
-    res.set('ETag', etag);
+    const tag = etag(book);
+    res.set('ETag', tag);
     res.set('Cache-Control', 'no-cache'); // キャッシュ可だが利用前に再検証する
 
     // クライアントが持つ ETag が最新と一致すれば、本文を送らず 304 を返す。
     const ifNoneMatch = req.get('If-None-Match');
-    if (ifNoneMatch && ifNoneMatch === etag) {
+    if (ifNoneMatch && ifNoneMatch === tag) {
       return res.status(304).end();
     }
 
@@ -38,14 +33,12 @@ function register(app) {
 
   // PATCH で内容を変えると ETag も変わる。古い If-None-Match では 304 にならず
   // 200 で新しい内容が返る、という再検証の挙動を試せる。
-  app.patch(`${BASE}/books/:id`, (req, res) => {
-    const book = books.find((b) => b.id === req.params.id);
-    if (!book) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', message: `'${req.params.id}' の書籍は存在しません。` } });
-    }
+  r.patch('/books/:id', (req, res) => {
+    const book = store.find(req.params.id);
+    if (!book) return notFound(res, `'${req.params.id}' の書籍は存在しません。`);
     const { id, ...patch } = req.body;
     Object.assign(book, patch);
-    res.set('ETag', etagFor(book)).json(book);
+    res.set('ETag', etag(book)).json(book);
   });
 }
 
@@ -67,8 +60,8 @@ module.exports = {
       '最新の内容が返ります。'
   },
   demos: [
-    { label: '書籍を取得（ETagを得る）', method: 'GET', path: `${BASE}/books/book-10` },
-    { label: '内容を更新（PATCH）→ ETag変化', method: 'PATCH', path: `${BASE}/books/book-10`, body: { rating: 4.9 } }
+    { label: '書籍を取得（ETagを得る）', method: 'GET', path: '/books/book-10' },
+    { label: '内容を更新（PATCH）→ ETag変化', method: 'PATCH', path: '/books/book-10', body: { rating: 4.9 } }
   ],
   register
 };

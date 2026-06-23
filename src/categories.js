@@ -1,7 +1,6 @@
 'use strict';
 
-// パターンの分類（カテゴリ）。順序はそのまま UI のナビゲーションの並び順になる。
-// 各パターンの meta.category がここの id を参照する。
+// パターンの分類。定義順がそのまま UI のナビゲーションの並び順になる。
 
 module.exports = [
   { id: 'fundamentals',       label: '基礎',                   blurb: 'リソース設計の土台となる操作。' },

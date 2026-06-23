@@ -204,7 +204,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   const card = document.createElement('div');
   card.className = 'exchange';
 
-  // --- リクエストパネル ---
   const reqPanel = document.createElement('div');
   reqPanel.className = 'panel req-panel';
   const reqHead = document.createElement('div');
@@ -233,7 +232,6 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   connector.textContent = '↓';
   card.appendChild(connector);
 
-  // --- レスポンスパネル ---
   const resPanel = document.createElement('div');
   resPanel.className = 'panel res-panel';
 
@@ -331,7 +329,6 @@ function copyButton(getText) {
   return btn;
 }
 
-// Location ヘッダーやページトークン、ETag など、レスポンスに応じた次の操作を提示する。
 function buildFollowups(req, res, json) {
   const out = [];
   const patternId = active && active.id;

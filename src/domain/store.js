@@ -1,7 +1,6 @@
 'use strict';
 
-// 状態を変更するパターンが共有する、ごく小さなインメモリ・リポジトリ。
-// createStore(seedFn) でパターンごとに独立したストアを持てる。
+// 状態を変更するパターンが使う、ごく小さなインメモリ・リポジトリ（createStore でパターンごとに独立）。
 
 class Store {
   constructor(seedFn) {

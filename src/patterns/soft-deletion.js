@@ -13,7 +13,7 @@ function register(r) {
     res.json({ showDeleted, totalSize: visible.length, books: visible });
   });
 
-  // ソフトデリート: 消さずに削除済みとして印を付け、トゥームストーンを 200 で返す。
+  // 消さずに削除フラグを立て、トゥームストーンを 200（204 ではなく）で返す。
   r.delete('/books/:id', (req, res) => {
     const book = store.find(req.params.id);
     if (!book) return notFound(res, `id '${req.params.id}' の書籍は存在しません。`);

@@ -11,6 +11,12 @@
 
 ![patterns](https://img.shields.io/badge/patterns-13-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
+## スクリーンショット
+
+「条件付きリクエスト（ETag / 304）」で **内容を更新（PATCH）** を実行した直後の様子。レスポンスに更新後の `ETag` と `Last-Modified` が付き、本文が返ります。
+
+![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)
+
 ## クイックスタート
 
 ```bash
@@ -32,21 +38,21 @@ PORT=5050 npm start
 
 ## 含まれるパターン
 
-| カテゴリ | パターン | 何を示すか | エンドポイント名前空間 |
-|---|---|---|---|
-| 基礎 | **標準メソッド（CRUD）** | List / Get / Create / Update / Delete の正攻法。`201 + Location`、部分更新の `PATCH`、`204` | `/api/standard-methods` |
-| データ転送の削減 | **ページネーション** | 不透明な `nextPageToken` カーソルによる固定サイズのページ | `/api/pagination` |
-| データ転送の削減 | **フィルタリング** | AND で結合するクエリパラメータでコレクションを絞り込む | `/api/filtering` |
-| データ転送の削減 | **部分レスポンス** | フィールドマスク（`?fields=id,title`）で over-fetching を避ける | `/api/partial-response` |
-| データ転送の削減 | **条件付きリクエスト** | `ETag`／`Last-Modified` と `If-None-Match`／`If-Modified-Since` で `304 Not Modified` | `/api/conditional-requests` |
-| 書き込みと信頼性 | **冪等性キー** | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す | `/api/idempotency` |
-| 書き込みと信頼性 | **長時間実行オペレーション** | `202 Accepted` ＋ 進捗をポーリングできる Operation | `/api/long-running-operations` |
-| 書き込みと信頼性 | **楽観的並行性制御** | `If-Match` ＋ `ETag` でロストアップデートを防ぐ（`412`／`428`） | `/api/optimistic-concurrency` |
-| セキュリティ | **認証（Bearer トークン）** | `Authorization: Bearer` を検証。無ければ `401` + `WWW-Authenticate` | `/api/auth-bearer` |
-| セキュリティ | **認可（スコープ）** | スコープ不足は `403`。最小権限の原則 | `/api/authorization-scopes` |
-| セキュリティ | **レート制限** | `429 Too Many Requests` + `Retry-After` + `RateLimit-*` | `/api/rate-limiting` |
-| セキュリティ | **セキュリティヘッダー（ハードニング）** | `Strict-Transport-Security`・`X-Content-Type-Options`・`Content-Security-Policy` などの防御的ヘッダー | `/api/security-headers` |
-| リソースのライフサイクル | **ソフトデリート** | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete` | `/api/soft-deletion` |
+| カテゴリ                 | パターン                                 | 何を示すか                                                                                            | エンドポイント名前空間         |
+| ------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 基礎                     | **標準メソッド（CRUD）**                 | List / Get / Create / Update / Delete の正攻法。`201 + Location`、部分更新の `PATCH`、`204`           | `/api/standard-methods`        |
+| データ転送の削減         | **ページネーション**                     | 不透明な `nextPageToken` カーソルによる固定サイズのページ                                             | `/api/pagination`              |
+| データ転送の削減         | **フィルタリング**                       | AND で結合するクエリパラメータでコレクションを絞り込む                                                | `/api/filtering`               |
+| データ転送の削減         | **部分レスポンス**                       | フィールドマスク（`?fields=id,title`）で over-fetching を避ける                                       | `/api/partial-response`        |
+| データ転送の削減         | **条件付きリクエスト**                   | `ETag`／`Last-Modified` と `If-None-Match`／`If-Modified-Since` で `304 Not Modified`                 | `/api/conditional-requests`    |
+| 書き込みと信頼性         | **冪等性キー**                           | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す                                         | `/api/idempotency`             |
+| 書き込みと信頼性         | **長時間実行オペレーション**             | `202 Accepted` ＋ 進捗をポーリングできる Operation                                                    | `/api/long-running-operations` |
+| 書き込みと信頼性         | **楽観的並行性制御**                     | `If-Match` ＋ `ETag` でロストアップデートを防ぐ（`412`／`428`）                                       | `/api/optimistic-concurrency`  |
+| セキュリティ             | **認証（Bearer トークン）**              | `Authorization: Bearer` を検証。無ければ `401` + `WWW-Authenticate`                                   | `/api/auth-bearer`             |
+| セキュリティ             | **認可（スコープ）**                     | スコープ不足は `403`。最小権限の原則                                                                  | `/api/authorization-scopes`    |
+| セキュリティ             | **レート制限**                           | `429 Too Many Requests` + `Retry-After` + `RateLimit-*`                                               | `/api/rate-limiting`           |
+| セキュリティ             | **セキュリティヘッダー（ハードニング）** | `Strict-Transport-Security`・`X-Content-Type-Options`・`Content-Security-Policy` などの防御的ヘッダー | `/api/security-headers`        |
+| リソースのライフサイクル | **ソフトデリート**                       | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete`                                      | `/api/soft-deletion`           |
 
 ## 構成
 
@@ -67,7 +73,7 @@ src/
 public/
   index.html           プレイグラウンドの土台（3 カラムレイアウト）
   app.js               データ駆動の UI: /api/_meta を読み、リクエストをライブ実行
-  style.css            スタイル（ライト/ダーク切替、Auth0 ドキュメント風）
+  style.css            スタイル（ライト/ダーク切替）
 ```
 
 画面は 3 カラム構成です。**左**: パターン一覧、**中央**: 解説とデモ用リクエスト、

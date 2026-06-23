@@ -30,7 +30,6 @@ function register(r) {
       return res.json(book);
     }
 
-    // 時刻による前提条件。前回以降に変わっていなければ 304。
     const ims = req.get('If-Modified-Since');
     if (ims) {
       const since = Date.parse(ims);

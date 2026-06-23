@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>API Design Patterns — Playground</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">{ }</span>
+        <div>
+          <h1>API Design Patterns</h1>
+          <p>An interactive playground — pick a pattern and watch it work, one request at a time.</p>
+        </div>
+      </div>
+      <span class="tagline">distilled from a shelf of API books</span>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Patterns</h2>
+        <nav id="patternList" class="pattern-list"></nav>
+      </aside>
+
+      <section id="detail" class="detail">
+        <p class="loading">Loading patterns…</p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

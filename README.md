@@ -13,8 +13,6 @@
 
 ## ライブデモ / スクリーンショット
 
-下の画像をクリックすると、**StackBlitz でそのままライブ実行**できます（ブラウザ内で Node サーバーが起動します）。「条件付きリクエスト（ETag / 304）」で **内容を更新（PATCH）** を実行した直後の様子で、レスポンスに更新後の `ETag` と `Last-Modified` が付きます。
-
 [![「条件付きリクエスト（ETag / 304）」パターンで PATCH を実行した直後の画面](docs/conditional-requests-patch.png)](https://stackblitz.com/github/dotNetGaijin87/api-design-patterns-catalog)
 
 ## クイックスタート
@@ -62,35 +60,3 @@ public/
   app.js               データ駆動の UI: /api/_meta を読み、リクエストをライブ実行
   style.css            スタイル（ライト/ダーク切替）
 ```
-
-画面は 3 カラム構成です。**左**: パターン一覧、**中央**: 解説とデモ用リクエスト、
-**右**: リクエスト／レスポンスのコンソール（常に表示）。
-
-UI は単一のエンドポイント `GET /api/_meta` だけで駆動されます。これは各パターンの
-メタデータとデモリクエストを返します。フロントエンドはパターンをハードコードせず、
-API が公開する内容をそのまま描画します。
-
-### 新しいパターンの追加
-
-`src/patterns/<name>.js` を作成して `{ meta, demos, register }` を export する**だけ**です。
-`registry.js` が自動検出し、サーバーが `/api/<id>` にマウントし、UI も取り込みます。
-登録リストへの追記は不要です。`register` は名前空間付きルーター（相対パス）を受け取り、
-`demos[].path` も相対パスで書きます。
-
-```js
-module.exports = {
-  meta: { id, category, title, blurb, docs },        // category は categories.js の id
-  demos: [{ label, method, path, headers?, body? }], // path は '/books' のように相対
-  register(r) {                                      // r は /api/<id> にスコープ済み
-    r.get('/books', (req, res) => res.json({ books: store.list() }));
-    // 絶対パスが必要なら r.base（= '/api/<id>'）を使う
-  }
-};
-```
-
-## メモ
-
-- データはすべてメモリ上にあり、再起動でリセットされます。状態を変更するパターンには
-  **リセット**用リクエストも用意してあり、いつでもクリーンな状態に戻せます。
-- ローカルの PDF はリポジトリを軽く保つため git 管理から除外しています。PDF をコミット
-  したい場合は `.gitignore` の `*.pdf` の行を削除してください。

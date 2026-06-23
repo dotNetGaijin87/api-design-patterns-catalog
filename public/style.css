@@ -237,10 +237,6 @@ html[data-theme="dark"] body {
   display: flex; align-items: center; gap: 10px; padding: 10px 14px;
   border-bottom: 1px solid var(--line); background: var(--panel-2); font-size: 13px;
 }
-.res-panel.s2 .panel-head { background: var(--get-bg); }
-.res-panel.s3 .panel-head { background: var(--info-bg); }
-.res-panel.s4 .panel-head { background: var(--patch-bg); }
-.res-panel.s5 .panel-head, .res-panel.s0 .panel-head { background: var(--delete-bg); }
 .panel-head .path { color: var(--ink); word-break: break-all; font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; }
 .panel-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); flex: none; }
 

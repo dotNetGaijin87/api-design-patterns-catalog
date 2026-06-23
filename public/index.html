@@ -1,36 +1,54 @@
 <!doctype html>
-<html lang="ja">
+<html lang="ja" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>API デザインパターン — プレイグラウンド</title>
+    <!-- テーマのちらつき防止: CSS 適用前に保存済みテーマを反映する -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t) document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header class="topbar">
       <div class="brand">
         <span class="logo">{ }</span>
-        <div>
-          <h1>API デザインパターン</h1>
-          <p>インタラクティブなプレイグラウンド — パターンを選び、1リクエストずつ動かして確かめる。</p>
-        </div>
+        <span class="brand-name">API デザインパターン</span>
       </div>
-      <span class="tagline">実際のエンドポイントを、パターンごとに動かす</span>
+
+      <div class="search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input id="patternSearch" type="search" placeholder="パターンを検索…" autocomplete="off" />
+      </div>
+
+      <div class="actions">
+        <button id="themeToggle" class="icon-btn" title="テーマを切り替え" aria-label="テーマを切り替え"></button>
+      </div>
     </header>
 
     <main class="layout">
       <aside class="sidebar">
-        <h2 class="sidebar-title">カテゴリ</h2>
+        <h2 class="sidebar-title">ドキュメント</h2>
         <nav id="patternList" class="pattern-list"></nav>
       </aside>
 
       <section id="detail" class="detail">
-        <p class="loading">パターンを読み込み中…</p>
+        <p class="loading">読み込み中…</p>
       </section>
 
       <section class="console-pane">
         <div class="console-head">
-          <h2 class="console-title">リクエスト / レスポンス</h2>
+          <h2 class="console-title">実行結果</h2>
           <button id="clearConsole" class="clear-btn">クリア</button>
         </div>
         <div id="console" class="console"></div>

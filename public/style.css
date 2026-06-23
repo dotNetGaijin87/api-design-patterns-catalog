@@ -231,11 +231,7 @@ html[data-theme="dark"] body {
 .exchange { display: flex; flex-direction: column; }
 
 .panel { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); box-shadow: var(--shadow); }
-.req-panel { border-left: 3px solid var(--line-2); }
-.res-panel.s2 { border-left: 3px solid var(--get); }
-.res-panel.s3 { border-left: 3px solid var(--info); }
-.res-panel.s4 { border-left: 3px solid var(--patch); }
-.res-panel.s5, .res-panel.s0 { border-left: 3px solid var(--delete); }
+.req-panel, .res-panel { border-left: 3px solid var(--line-2); }
 
 .panel-head {
   display: flex; align-items: center; gap: 10px; padding: 10px 14px;

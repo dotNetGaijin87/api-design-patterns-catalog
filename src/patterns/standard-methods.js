@@ -5,8 +5,6 @@ const { seedBooks } = require('../data');
 // ---------------------------------------------------------------------------
 // Standard Methods (List / Get / Create / Update / Delete)
 // ---------------------------------------------------------------------------
-// The five "standard methods" are the predictable CRUD verbs every resource
-// should support before reaching for anything custom. Map them onto HTTP:
 //   List   GET    /books
 //   Get    GET    /books/{id}
 //   Create POST   /books         -> 201 + Location header
@@ -36,10 +34,10 @@ function register(app) {
     const id = `book-${String(nextId++).padStart(2, '0')}`;
     const book = {
       id,
-      title: req.body.title || 'Untitled',
-      author: req.body.author || 'Unknown',
+      title: req.body.title || '無題',
+      author: req.body.author || '著者不明',
       year: req.body.year || new Date().getFullYear(),
-      category: req.body.category || 'Fiction',
+      category: req.body.category || '純文学',
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
@@ -51,7 +49,7 @@ function register(app) {
   app.patch(`${BASE}/books/:id`, (req, res) => {
     const book = books.find((b) => b.id === req.params.id);
     if (!book) return notFound(res, req.params.id);
-    // PATCH = only the supplied fields change; id is immutable.
+    // PATCH = 渡されたフィールドだけ変更する。id は不変。
     const { id, ...patch } = req.body;
     Object.assign(book, patch);
     res.json(book);
@@ -65,7 +63,7 @@ function register(app) {
     res.status(204).end();
   });
 
-  // Reset the demo data.
+  // デモデータのリセット
   app.post(`${BASE}/_reset`, (_req, res) => {
     books = seedBooks();
     nextId = books.length + 1;
@@ -74,40 +72,41 @@ function register(app) {
 }
 
 function notFound(res, id) {
-  res.status(404).json({ error: { code: 'NOT_FOUND', message: `No book with id '${id}'.` } });
+  res.status(404).json({ error: { code: 'NOT_FOUND', message: `id '${id}' の書籍は存在しません。` } });
 }
 
 module.exports = {
   meta: {
     id: 'standard-methods',
-    title: 'Standard Methods (CRUD)',
-    blurb: 'The five predictable verbs every resource should support, mapped cleanly onto HTTP.',
+    category: 'fundamentals',
+    title: '標準メソッド（CRUD）',
+    blurb: 'すべてのリソースが備えるべき5つの基本操作を、HTTPに素直にマッピングする。',
     docs:
-      'Before designing anything custom, give a resource the five "standard methods": List, ' +
-      'Get, Create, Update, Delete. Consistency is the point — once a client learns the shape ' +
-      'of one resource, every other resource behaves the same way.\n\n' +
-      'Note the HTTP details that matter: Create returns 201 with a Location header pointing at ' +
-      'the new resource; Update uses PATCH for partial changes (the id stays immutable); Delete ' +
-      'returns 204 No Content. Try "Get (missing id)" to see a structured 404 error body.'
+      '独自の操作を設計する前に、まずはリソースに5つの「標準メソッド」を用意します。' +
+      'List（一覧取得）・Get（単体取得）・Create（作成）・Update（更新）・Delete（削除）です。' +
+      '要点は一貫性で、あるリソースの形を一度覚えれば、ほかのすべてのリソースも同じように扱えます。\n\n' +
+      'HTTPの細部にも注目してください。Create は 201 を返し、新しいリソースを指す Location ' +
+      'ヘッダーを付けます。Update は部分更新のために PATCH を使い（id は不変）、Delete は ' +
+      '204 No Content を返します。「存在しないID」を試すと、構造化された 404 エラーのボディを確認できます。'
   },
   demos: [
-    { label: 'List all books', method: 'GET', path: `${BASE}/books` },
-    { label: 'Get one book', method: 'GET', path: `${BASE}/books/book-01` },
-    { label: 'Get (missing id) → 404', method: 'GET', path: `${BASE}/books/book-999` },
+    { label: '書籍を一覧取得', method: 'GET', path: `${BASE}/books` },
+    { label: '書籍を1件取得', method: 'GET', path: `${BASE}/books/book-01` },
+    { label: '存在しないID → 404', method: 'GET', path: `${BASE}/books/book-999` },
     {
-      label: 'Create a book → 201',
+      label: '書籍を作成 → 201',
       method: 'POST',
       path: `${BASE}/books`,
-      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction', pages: 320, rating: 4.0 }
+      body: { title: '門', author: '夏目漱石', year: 1910, category: '純文学', pages: 240, rating: 4.1 }
     },
     {
-      label: 'Update a book (PATCH)',
+      label: '書籍を更新（PATCH）',
       method: 'PATCH',
       path: `${BASE}/books/book-01`,
       body: { rating: 5.0 }
     },
-    { label: 'Delete a book → 204', method: 'DELETE', path: `${BASE}/books/book-16` },
-    { label: 'Reset demo data', method: 'POST', path: `${BASE}/_reset` }
+    { label: '書籍を削除 → 204', method: 'DELETE', path: `${BASE}/books/book-16` },
+    { label: 'デモデータをリセット', method: 'POST', path: `${BASE}/_reset` }
   ],
   register
 };

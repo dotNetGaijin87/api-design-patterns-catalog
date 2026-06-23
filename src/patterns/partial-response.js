@@ -5,9 +5,8 @@ const { seedBooks } = require('../data');
 // ---------------------------------------------------------------------------
 // Partial Response (field masks)
 // ---------------------------------------------------------------------------
-// Let the client choose which fields come back via ?fields=id,title,author.
-// Smaller payloads, less over-fetching — the REST cousin of GraphQL's
-// selection sets.
+// ?fields=id,title,author のように、返すフィールドをクライアントに選ばせる。
+// ペイロードを小さくし over-fetching を避ける、GraphQL の選択セットに相当する手法。
 
 const books = seedBooks();
 const BASE = '/api/partial-response';
@@ -37,7 +36,7 @@ function register(app) {
   app.get(`${BASE}/books/:id`, (req, res) => {
     const book = books.find((b) => b.id === req.params.id);
     if (!book) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', message: `No book '${req.params.id}'.` } });
+      return res.status(404).json({ error: { code: 'NOT_FOUND', message: `'${req.params.id}' の書籍は存在しません。` } });
     }
     res.json(pick(book, parseFields(req.query.fields)));
   });
@@ -46,20 +45,22 @@ function register(app) {
 module.exports = {
   meta: {
     id: 'partial-response',
-    title: 'Partial Response (field masks)',
-    blurb: 'Let the client request only the fields it needs with ?fields=id,title.',
+    category: 'data-transfer',
+    title: '部分レスポンス（フィールドマスク）',
+    blurb: '?fields=id,title のように、必要なフィールドだけを要求できるようにする。',
     docs:
-      'Mobile clients and dashboards rarely need every field of a resource. A field mask — ' +
-      '?fields=id,title,author — lets the caller project exactly the columns it wants, shrinking ' +
-      'payloads and avoiding over-fetching. It is the REST cousin of a GraphQL selection set.\n\n' +
-      'Compare "Full objects" with "Only id + title": same endpoint, dramatically different ' +
-      'payload size. Unknown field names are simply ignored rather than erroring.'
+      'モバイルクライアントやダッシュボードが、リソースの全フィールドを必要とすることはまれです。' +
+      'フィールドマスク（?fields=id,title,author）を使うと、呼び出し側は欲しい項目だけを射影でき、' +
+      'ペイロードを小さくして over-fetching を避けられます。これは GraphQL の選択セットに相当する ' +
+      'REST の手法です。\n\n' +
+      '「全フィールド」と「id + title のみ」を比べてみてください。同じエンドポイントでもペイロードの' +
+      '大きさが大きく変わります。未知のフィールド名はエラーにせず、単に無視されます。'
   },
   demos: [
-    { label: 'Full objects (all fields)', method: 'GET', path: `${BASE}/books` },
-    { label: 'Only id + title', method: 'GET', path: `${BASE}/books?fields=id,title` },
-    { label: 'Title, author, rating', method: 'GET', path: `${BASE}/books?fields=title,author,rating` },
-    { label: 'Single book, two fields', method: 'GET', path: `${BASE}/books/book-05?fields=title,year` }
+    { label: '全フィールド', method: 'GET', path: `${BASE}/books` },
+    { label: 'id + title のみ', method: 'GET', path: `${BASE}/books?fields=id,title` },
+    { label: 'title, author, rating', method: 'GET', path: `${BASE}/books?fields=title,author,rating` },
+    { label: '1件・2フィールドのみ', method: 'GET', path: `${BASE}/books/book-05?fields=title,year` }
   ],
   register
 };

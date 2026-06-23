@@ -3,6 +3,7 @@
 const path = require('path');
 const { createApp } = require('./src/lib/mini-app');
 const patterns = require('./src/registry');
+const categories = require('./src/categories');
 
 const app = createApp();
 
@@ -13,12 +14,10 @@ patterns.forEach((pattern) => pattern.register(app));
 // Drives the UI: the catalog of patterns plus the demo requests for each.
 // The frontend is entirely data-driven from this single endpoint.
 app.get('/api/_meta', (_req, res) => {
-  res.json(
-    patterns.map((p) => ({
-      ...p.meta,
-      demos: p.demos
-    }))
-  );
+  res.json({
+    categories,
+    patterns: patterns.map((p) => ({ ...p.meta, demos: p.demos }))
+  });
 });
 
 // Serve the static UI from /public (anything not matched by a route above).

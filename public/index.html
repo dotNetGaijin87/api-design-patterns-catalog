@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>API Design Patterns — Playground</title>
+    <title>API デザインパターン — プレイグラウンド</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -11,21 +11,29 @@
       <div class="brand">
         <span class="logo">{ }</span>
         <div>
-          <h1>API Design Patterns</h1>
-          <p>An interactive playground — pick a pattern and watch it work, one request at a time.</p>
+          <h1>API デザインパターン</h1>
+          <p>インタラクティブなプレイグラウンド — パターンを選び、1リクエストずつ動かして確かめる。</p>
         </div>
       </div>
-      <span class="tagline">run real endpoints, one pattern at a time</span>
+      <span class="tagline">実際のエンドポイントを、パターンごとに動かす</span>
     </header>
 
     <main class="layout">
       <aside class="sidebar">
-        <h2 class="sidebar-title">Patterns</h2>
+        <h2 class="sidebar-title">カテゴリ</h2>
         <nav id="patternList" class="pattern-list"></nav>
       </aside>
 
       <section id="detail" class="detail">
-        <p class="loading">Loading patterns…</p>
+        <p class="loading">パターンを読み込み中…</p>
+      </section>
+
+      <section class="console-pane">
+        <div class="console-head">
+          <h2 class="console-title">リクエスト / レスポンス</h2>
+          <button id="clearConsole" class="clear-btn">クリア</button>
+        </div>
+        <div id="console" class="console"></div>
       </section>
     </main>
 

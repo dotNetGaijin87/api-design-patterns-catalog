@@ -5,9 +5,8 @@ const { seedBooks, CATEGORIES } = require('../data');
 // ---------------------------------------------------------------------------
 // Filtering
 // ---------------------------------------------------------------------------
-// Let clients narrow a collection with query parameters. Filters are ANDed
-// together and an echo of the applied filters is returned so the response is
-// self-describing.
+// クエリパラメータでコレクションを絞り込む。条件は AND で結合し、適用したフィルタを
+// レスポンスに echo して自己説明的にする。
 
 const books = seedBooks();
 const BASE = '/api/filtering';
@@ -21,11 +20,11 @@ function register(app) {
 
     if (author) {
       applied.author = author;
-      result = result.filter((b) => b.author.toLowerCase().includes(author.toLowerCase()));
+      result = result.filter((b) => b.author.includes(author));
     }
     if (category) {
       applied.category = category;
-      result = result.filter((b) => b.category.toLowerCase() === category.toLowerCase());
+      result = result.filter((b) => b.category === category);
     }
     if (minYear) {
       applied.minYear = Number(minYear);
@@ -37,7 +36,7 @@ function register(app) {
     }
     if (q) {
       applied.q = q;
-      result = result.filter((b) => b.title.toLowerCase().includes(q.toLowerCase()));
+      result = result.filter((b) => b.title.includes(q));
     }
 
     res.json({ filter: applied, totalSize: result.length, books: result });
@@ -47,21 +46,22 @@ function register(app) {
 module.exports = {
   meta: {
     id: 'filtering',
-    title: 'Filtering',
-    blurb: 'Narrow a collection with query parameters that combine with AND.',
+    category: 'data-transfer',
+    title: 'フィルタリング',
+    blurb: 'クエリパラメータでコレクションを絞り込む（条件は AND で結合）。',
     docs:
-      'Filtering lets a client ask for the subset of a collection it cares about. Each ' +
-      'parameter is a separate, well-named field (author, category, minYear, q for a title ' +
-      'search) and multiple filters are combined with AND.\n\n' +
-      'The response echoes the filters it actually applied under "filter", so a response is ' +
-      'self-describing and easy to debug. Available categories: ' + CATEGORIES.join(', ') + '.'
+      'フィルタリングは、クライアントが関心のある部分集合だけを要求できるようにする仕組みです。' +
+      '各パラメータは意味の明確な独立したフィールド（author、category、minYear、タイトル検索の q）で、' +
+      '複数を指定すると AND で結合されます。\n\n' +
+      'レスポンスには実際に適用されたフィルタが filter として echo されるため、レスポンス自体が' +
+      '自己説明的でデバッグしやすくなります。利用可能なジャンル: ' + CATEGORIES.join('、') + '。'
   },
   demos: [
-    { label: 'Category = Fantasy', method: 'GET', path: `${BASE}/books?category=Fantasy` },
-    { label: 'Sci-Fi since 2023', method: 'GET', path: `${BASE}/books?category=Sci-Fi&minYear=2023` },
-    { label: 'Title contains "Tide"', method: 'GET', path: `${BASE}/books?q=Tide` },
-    { label: 'By author (Vale)', method: 'GET', path: `${BASE}/books?author=Vale` },
-    { label: 'No filters (everything)', method: 'GET', path: `${BASE}/books` }
+    { label: 'ジャンル＝ミステリー', method: 'GET', path: `${BASE}/books?category=ミステリー` },
+    { label: '2015年以降の純文学', method: 'GET', path: `${BASE}/books?category=純文学&minYear=2015` },
+    { label: 'タイトルに「人間」を含む', method: 'GET', path: `${BASE}/books?q=人間` },
+    { label: '著者で絞り込み（村上）', method: 'GET', path: `${BASE}/books?author=村上` },
+    { label: 'フィルタなし（全件）', method: 'GET', path: `${BASE}/books` }
   ],
   register
 };

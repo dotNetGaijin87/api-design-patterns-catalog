@@ -1,70 +1,73 @@
-# API Design Patterns — Interactive Playground
+# API デザインパターン — インタラクティブ・プレイグラウンド
 
-A small, runnable reference that demonstrates common **web API design patterns**,
-each as a real, live HTTP endpoint with an interactive UI. Pick a pattern in the
-sidebar, click a request, and watch it work — the request, the response (status,
-headers, body), and the natural next step (follow a `Location`, chase a
-pagination token).
+よく使われる **Web API のデザインパターン** を、それぞれ実際に動作する HTTP エンドポイント
+として体験できる、小さく実行可能なリファレンスです。左の一覧からパターンを選び、リクエストを
+クリックすると、右側のコンソールに「リクエスト・レスポンス（ステータス・ヘッダー・ボディ）・
+妥当な次の操作（`Location` をたどる、ページトークンを追う）」が表示されます。画面をスクロール
+しなくても結果が確認できます。
 
-The example resource is a small, neutral catalog of (fictional) books, used
-purely as a familiar domain for demonstrating the patterns.
+例として扱うリソースは、よく知られた日本の書籍の小さなカタログです。パターンを示すための
+馴染みのある中立的なドメインとして使っているだけです。
 
 ![patterns](https://img.shields.io/badge/patterns-7-4f46e5) ![node](https://img.shields.io/badge/node-%E2%89%A518-3c873a)
 
-## Quick start
+## クイックスタート
 
 ```bash
-npm start            # no dependencies — npm install is not required
-# open http://localhost:3000
+npm start            # 依存関係なし — npm install は不要
+# http://localhost:3000 を開く
 ```
 
-There are **no dependencies** — the server runs on Node's built-in `http`
-module via a tiny Express-flavoured shim ([src/lib/mini-app.js](src/lib/mini-app.js)),
-so `npm install` is optional. Requires Node ≥ 18.
+**依存パッケージはありません。** サーバーは Node 標準の `http` モジュールを、小さな
+Express 風シム（[src/lib/mini-app.js](src/lib/mini-app.js)）経由で利用するため、`npm install`
+は不要です。Node ≥ 18 が必要です。
 
-If port 3000 is busy, pick another:
+ポート 3000 が使用中の場合は、別のポートを指定します:
 
 ```bash
 PORT=5050 npm start
 ```
 
-Use `npm run dev` for auto-reload while editing (Node's built-in `--watch`).
+編集中の自動リロードには `npm run dev`（Node 標準の `--watch`）を使ってください。
 
-## Patterns included
+## 含まれるパターン
 
-| Pattern | What it shows | Endpoint namespace |
+| パターン | 何を示すか | エンドポイント名前空間 |
 |---|---|---|
-| **Standard Methods (CRUD)** | List / Get / Create / Update / Delete done right, with `201 + Location`, partial `PATCH`, and `204` | `/api/standard-methods` |
-| **Pagination** | Bounded pages with an opaque `nextPageToken` cursor | `/api/pagination` |
-| **Filtering** | Narrow a collection with AND-combined query params | `/api/filtering` |
-| **Partial Response** | Field masks (`?fields=id,title`) to avoid over-fetching | `/api/partial-response` |
-| **Long-Running Operations** | `202 Accepted` + a pollable Operation with live progress | `/api/lro` |
-| **Idempotency Keys** | Safe POST retries — the same `Idempotency-Key` replays the original result | `/api/idempotency` |
-| **Soft Deletion** | Tombstones instead of erasure, with `showDeleted` and `:undelete` | `/api/soft-deletion` |
+| **標準メソッド（CRUD）** | List / Get / Create / Update / Delete の正攻法。`201 + Location`、部分更新の `PATCH`、`204` | `/api/standard-methods` |
+| **ページネーション** | 不透明な `nextPageToken` カーソルによる固定サイズのページ | `/api/pagination` |
+| **フィルタリング** | AND で結合するクエリパラメータでコレクションを絞り込む | `/api/filtering` |
+| **部分レスポンス** | フィールドマスク（`?fields=id,title`）で over-fetching を避ける | `/api/partial-response` |
+| **長時間実行オペレーション** | `202 Accepted` ＋ 進捗をポーリングできる Operation | `/api/lro` |
+| **冪等性キー** | 安全な POST リトライ。同じ `Idempotency-Key` は元の結果を返す | `/api/idempotency` |
+| **ソフトデリート** | 物理削除ではなくトゥームストーン化。`showDeleted` と `:undelete` | `/api/soft-deletion` |
 
-## How it's wired
+## 構成
 
 ```
-server.js              HTTP server: serves the UI + mounts every pattern
+server.js              HTTP サーバー: UI を配信し、全パターンをマウントする
 src/
-  data.js              Shared seed dataset (sample book catalog) + per-demo copies
-  registry.js          The ordered list of pattern modules
-  patterns/*.js        One self-contained module per pattern
+  data.js              共有シードデータ（書籍カタログ）＋ デモごとのコピー
+  registry.js          パターンモジュールの順序付きリスト
+  patterns/*.js        パターンごとに 1 つの自己完結したモジュール
 public/
-  index.html           The playground shell
-  app.js               Data-driven UI: reads /api/_meta, runs requests live
-  style.css            Styling
+  index.html           プレイグラウンドの土台（3 カラムレイアウト）
+  app.js               データ駆動の UI: /api/_meta を読み、リクエストをライブ実行
+  style.css            スタイル
 ```
 
-The UI is entirely driven by a single endpoint, `GET /api/_meta`, which returns
-each pattern's metadata plus its demo requests. The frontend never hard-codes a
-pattern — it just renders whatever the API advertises.
+画面は 3 カラム構成です。**左**: パターン一覧、**中央**: 解説とデモ用リクエスト、
+**右**: リクエスト／レスポンスのコンソール（常に表示）。
 
-### Adding a new pattern
+UI は単一のエンドポイント `GET /api/_meta` だけで駆動されます。これは各パターンの
+メタデータとデモリクエストを返します。フロントエンドはパターンをハードコードせず、
+API が公開する内容をそのまま描画します。
 
-Create `src/patterns/<name>.js` exporting `{ meta, demos, register }`, then add
-it to the array in `src/registry.js`. The server mounts its routes and the UI
-picks it up automatically — no other changes needed.
+### 新しいパターンの追加
+
+`src/patterns/<name>.js` を作成して `{ meta, demos, register }` を export し、
+`src/registry.js` の配列に加えるだけです。サーバーがルートをマウントし、UI も自動的に
+取り込みます。ほかに変更は要りません。
 
 ```js
 module.exports = {
@@ -74,9 +77,9 @@ module.exports = {
 };
 ```
 
-## Notes
+## メモ
 
-- All data lives in memory and resets on restart; mutating patterns also expose
-  a **Reset** request so you can return to a clean slate at any time.
-- Any local PDFs are git-ignored to keep the repo light. Remove the `*.pdf` line
-  from `.gitignore` if you want to commit PDFs.
+- データはすべてメモリ上にあり、再起動でリセットされます。状態を変更するパターンには
+  **リセット**用リクエストも用意してあり、いつでもクリーンな状態に戻せます。
+- ローカルの PDF はリポジトリを軽く保つため git 管理から除外しています。PDF をコミット
+  したい場合は `.gitignore` の `*.pdf` の行を削除してください。

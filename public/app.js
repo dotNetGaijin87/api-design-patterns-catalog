@@ -1,11 +1,13 @@
 'use strict';
 
-// The entire UI is data-driven from GET /api/_meta. Each pattern declares its
-// own demo requests; this script renders them and runs them against the live
-// API, showing the request, the response, and any sensible follow-up actions.
+// UI は GET /api/_meta から完全にデータ駆動で構築される。各パターンは自身のカテゴリと
+// デモリクエストを宣言し、このスクリプトがカテゴリ別のナビを描画して、選ばれたパターンの
+// リクエストをライブ実行し、結果（最新の1件）を右側のコンソールに表示する。
 
+let categories = [];
 let patterns = [];
 let active = null;
+let openCategory = null;
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -13,36 +15,80 @@ init();
 
 async function init() {
   try {
-    const res = await fetch('/api/_meta');
-    patterns = await res.json();
+    const data = await (await fetch('/api/_meta')).json();
+    categories = data.categories || [];
+    patterns = data.patterns || [];
   } catch (err) {
-    $('#detail').innerHTML = `<p class="loading">Could not load /api/_meta — is the server running?</p>`;
+    $('#detail').innerHTML = `<p class="loading">/api/_meta を読み込めませんでした — サーバーは起動していますか？</p>`;
     return;
   }
   renderSidebar();
+  const clear = $('#clearConsole');
+  if (clear) clear.addEventListener('click', resetConsole);
+  resetConsole();
   if (patterns.length) select(patterns[0].id);
+}
+
+function patternsIn(catId) {
+  return patterns.filter((p) => p.category === catId);
 }
 
 function renderSidebar() {
   const nav = $('#patternList');
   nav.innerHTML = '';
-  for (const p of patterns) {
-    const btn = document.createElement('button');
-    btn.className = 'pattern-item';
-    btn.dataset.id = p.id;
-    btn.innerHTML = `${escapeHtml(p.title)}<span class="pi-sub">${escapeHtml(p.blurb)}</span>`;
-    btn.addEventListener('click', () => select(p.id));
-    nav.appendChild(btn);
+  for (const cat of categories) {
+    const pats = patternsIn(cat.id);
+    if (!pats.length) continue;
+
+    const group = document.createElement('div');
+    group.className = 'cat-group';
+    group.dataset.cat = cat.id;
+
+    const header = document.createElement('button');
+    header.className = 'cat-header';
+    header.innerHTML =
+      `<span class="cat-caret">▸</span>` +
+      `<span class="cat-label">${escapeHtml(cat.label)}</span>` +
+      `<span class="cat-count">${pats.length}</span>`;
+    header.addEventListener('click', () => toggleCategory(cat.id));
+    group.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'cat-patterns';
+    for (const p of pats) {
+      const btn = document.createElement('button');
+      btn.className = 'pattern-item';
+      btn.dataset.id = p.id;
+      btn.innerHTML = `${escapeHtml(p.title)}<span class="pi-sub">${escapeHtml(p.blurb)}</span>`;
+      btn.addEventListener('click', () => select(p.id));
+      list.appendChild(btn);
+    }
+    group.appendChild(list);
+    nav.appendChild(group);
+  }
+}
+
+function toggleCategory(id) {
+  openCategory = openCategory === id ? null : id;
+  applyOpenState();
+}
+
+function applyOpenState() {
+  for (const g of document.querySelectorAll('.cat-group')) {
+    g.classList.toggle('open', g.dataset.cat === openCategory);
   }
 }
 
 function select(id) {
   active = patterns.find((p) => p.id === id);
   if (!active) return;
+  openCategory = active.category;
+  applyOpenState();
   for (const el of document.querySelectorAll('.pattern-item')) {
     el.classList.toggle('active', el.dataset.id === id);
   }
   renderDetail(active);
+  resetConsole();
 }
 
 function renderDetail(p) {
@@ -52,9 +98,7 @@ function renderDetail(p) {
 
   const head = document.createElement('div');
   head.className = 'detail-head';
-  head.innerHTML =
-    `<h2>${escapeHtml(p.title)}</h2>` +
-    `<p class="blurb">${escapeHtml(p.blurb)}</p>`;
+  head.innerHTML = `<h2>${escapeHtml(p.title)}</h2><p class="blurb">${escapeHtml(p.blurb)}</p>`;
   detail.appendChild(head);
 
   if (p.docs) {
@@ -66,7 +110,7 @@ function renderDetail(p) {
 
   const tryTitle = document.createElement('h3');
   tryTitle.className = 'section-title';
-  tryTitle.textContent = 'Try it';
+  tryTitle.textContent = '試す';
   detail.appendChild(tryTitle);
 
   const demos = document.createElement('div');
@@ -79,37 +123,27 @@ function renderDetail(p) {
     demos.appendChild(btn);
   }
   detail.appendChild(demos);
-
-  const consoleHead = document.createElement('div');
-  consoleHead.className = 'console-head';
-  consoleHead.innerHTML = `<h3 class="section-title" style="margin:0">Request / response console</h3>`;
-  const clear = document.createElement('button');
-  clear.className = 'clear-btn';
-  clear.textContent = 'Clear';
-  clear.addEventListener('click', () => resetConsole());
-  consoleHead.appendChild(clear);
-  detail.appendChild(consoleHead);
-
-  const con = document.createElement('div');
-  con.className = 'console';
-  con.id = 'console';
-  detail.appendChild(con);
-  resetConsole();
 }
 
 function resetConsole() {
   const con = $('#console');
-  if (con) con.innerHTML = `<div class="console-empty">Click a request above to see it run live.</div>`;
+  if (con) con.innerHTML = `<div class="console-empty">左の「試す」からリクエストをクリックすると、ここに実行結果（リクエストとレスポンス）が表示されます。</div>`;
 }
 
-// --- Run a request and render the exchange -------------------------------
+// --- リクエストを実行し、やり取りを描画する -------------------------------
 
 async function runRequest(req) {
   const con = $('#console');
-  const empty = con.querySelector('.console-empty');
-  if (empty) empty.remove();
+  // 新しい呼び出しごとに、前回の結果をクリアして最新の1件だけを表示する。
+  con.innerHTML = '';
 
-  const opts = { method: req.method, headers: { ...(req.headers || {}) } };
+  const opts = {
+    method: req.method,
+    headers: { ...(req.headers || {}) },
+    // ブラウザの HTTP キャッシュを介さず、明示した条件付きヘッダーをそのまま送る。
+    // これにより 304 がそのまま観測できる。
+    cache: 'no-store'
+  };
   if (req.body !== undefined) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(req.body);
@@ -136,13 +170,13 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   const card = document.createElement('div');
   card.className = 'exchange';
 
-  // Request line
+  // リクエスト行
   const reqLine = document.createElement('div');
   reqLine.className = 'req-line';
   reqLine.innerHTML = `<span class="method ${req.method}">${req.method}</span><span class="path">${escapeHtml(req.path)}</span>`;
   card.appendChild(reqLine);
 
-  // Request headers / body (if any)
+  // リクエストのヘッダー／ボディ（あれば）
   if (req.headers || req.body !== undefined) {
     const meta = document.createElement('div');
     meta.className = 'req-meta';
@@ -151,7 +185,7 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
       bits.push(Object.entries(req.headers).map(([k, v]) => `${escapeHtml(k)}: <code>${escapeHtml(String(v))}</code>`).join('&nbsp;&nbsp;'));
     }
     if (req.body !== undefined) {
-      bits.push(`body: <code>${escapeHtml(JSON.stringify(req.body))}</code>`);
+      bits.push(`ボディ: <code>${escapeHtml(JSON.stringify(req.body))}</code>`);
     }
     meta.innerHTML = bits.join('<br>');
     card.appendChild(meta);
@@ -160,27 +194,28 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   if (networkError) {
     const resLine = document.createElement('div');
     resLine.className = 'res-line';
-    resLine.innerHTML = `<span class="status s0">NETWORK ERROR</span><span class="timing">${escapeHtml(String(networkError.message || networkError))}</span>`;
+    resLine.innerHTML = `<span class="status s0">ネットワークエラー</span><span class="timing">${escapeHtml(String(networkError.message || networkError))}</span>`;
     card.appendChild(resLine);
     return card;
   }
 
-  // Response status line
-  const cls = res.ok ? 's2' : res.status >= 500 ? 's5' : 's4';
+  // レスポンスのステータス行（2xx / 3xx / 4xx / 5xx で色分け）
+  const cls = res.status < 300 ? 's2' : res.status < 400 ? 's3' : res.status < 500 ? 's4' : 's5';
   const resLine = document.createElement('div');
   resLine.className = 'res-line';
   let statusHtml = `<span class="status ${cls}">${res.status} ${escapeHtml(res.statusText || '')}</span><span class="timing">${ms} ms</span>`;
   if (res.headers.get('Idempotent-Replayed') === 'true') {
-    statusHtml += `<span class="replay-flag">⟳ replayed (deduplicated)</span>`;
+    statusHtml += `<span class="replay-flag">⟳ リプレイ（重複排除）</span>`;
+  }
+  if (res.status === 304) {
+    statusHtml += `<span class="replay-flag">本文の転送なし</span>`;
   }
   resLine.innerHTML = statusHtml;
   card.appendChild(resLine);
 
-  // Interesting response headers
-  const interesting = ['Location', 'Idempotent-Replayed', 'Content-Type'];
-  const shown = interesting
-    .map((h) => [h, res.headers.get(h)])
-    .filter(([, v]) => v);
+  // 注目すべきレスポンスヘッダー
+  const interesting = ['Location', 'ETag', 'Last-Modified', 'Cache-Control', 'Idempotent-Replayed', 'Content-Type'];
+  const shown = interesting.map((h) => [h, res.headers.get(h)]).filter(([, v]) => v);
   if (shown.length) {
     const hdr = document.createElement('div');
     hdr.className = 'res-headers';
@@ -188,17 +223,17 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
     card.appendChild(hdr);
   }
 
-  // Body
+  // ボディ
   const pre = document.createElement('pre');
   pre.className = 'body';
   if (json !== null) {
     pre.innerHTML = syntaxHighlight(json);
   } else {
-    pre.textContent = bodyText || '(empty body)';
+    pre.textContent = bodyText || '（本文なし）';
   }
   card.appendChild(pre);
 
-  // Follow-up actions
+  // 次の操作
   const followups = buildFollowups(req, res, json);
   if (followups.length) {
     const wrap = document.createElement('div');
@@ -216,27 +251,36 @@ function renderExchange(req, res, json, bodyText, ms, networkError) {
   return card;
 }
 
-// Offer the natural next step based on real HTTP/REST conventions in the
-// response — a Location header to follow, or a pagination token to chase.
+// レスポンスに含まれる実際の HTTP/REST の慣習をもとに、自然な次の操作を提示する。
 function buildFollowups(req, res, json) {
   const out = [];
 
   const location = res.headers.get('Location');
   if (location) {
-    out.push({ label: 'Follow Location →', request: { method: 'GET', path: location } });
+    out.push({ label: 'Location をたどる →', request: { method: 'GET', path: location } });
   }
 
   if (json && json.nextPageToken) {
     out.push({
-      label: 'Next page →',
+      label: '次のページ →',
       request: { method: 'GET', path: setQueryParam(req.path, 'pageToken', json.nextPageToken) }
+    });
+  }
+
+  // ETag が返り、まだ条件付きにしていなければ、304 を体験する再リクエストを勧める。
+  const etag = res.headers.get('ETag');
+  const alreadyConditional = req.headers && req.headers['If-None-Match'];
+  if (etag && !alreadyConditional) {
+    out.push({
+      label: 'If-None-Match で再取得 → 304',
+      request: { method: req.method, path: req.path, headers: { 'If-None-Match': etag } }
     });
   }
 
   return out;
 }
 
-// --- helpers --------------------------------------------------------------
+// --- ヘルパー --------------------------------------------------------------
 
 function setQueryParam(path, key, value) {
   const url = new URL(path, window.location.origin);

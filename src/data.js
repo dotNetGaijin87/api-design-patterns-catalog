@@ -1,34 +1,34 @@
 'use strict';
 
-// Seed dataset shared by every pattern demo.
+// 全パターンのデモが共有するシードデータ。
 //
-// The example resource is a small catalog of (fictional) books — a familiar,
-// neutral domain for showing CRUD, paging, filtering, and the rest. Each
-// pattern that mutates state gets its OWN fresh copy via seedBooks(), so demos
-// never interfere with one another and can be reset at any time.
+// 例として扱うリソースは、よく知られた日本の書籍のカタログです。CRUD・ページング・
+// フィルタリングなどを示すための、馴染みのある中立的なドメインとして使っています。
+// 状態を変更するパターンは seedBooks() で自分専用のコピーを受け取るため、デモ同士が
+// 干渉せず、いつでもリセットできます。
 
-const CATEGORIES = ['Fiction', 'Sci-Fi', 'Fantasy', 'Mystery', 'History', 'Cookbook'];
+const CATEGORIES = ['純文学', 'ミステリー', 'SF', 'ファンタジー', '歴史'];
 
 const SEED = [
-  { id: 'book-01', title: 'The Glass Forest',        author: 'Mara Quinn',     year: 2019, category: 'Fantasy',  pages: 412, rating: 4.4 },
-  { id: 'book-02', title: 'Tideborn',                author: 'E. R. Vale',     year: 2021, category: 'Fantasy',  pages: 380, rating: 4.2 },
-  { id: 'book-03', title: 'Quantum Tea',             author: 'Priya Anand',    year: 2023, category: 'Sci-Fi',   pages: 336, rating: 4.6 },
-  { id: 'book-04', title: 'The Lantern Office',      author: 'Tom Bradbury',   year: 2018, category: 'Mystery',  pages: 290, rating: 4.1 },
-  { id: 'book-05', title: 'Salt and Cedar',          author: 'Nina Hollis',    year: 2020, category: 'Fiction',  pages: 354, rating: 4.7 },
-  { id: 'book-06', title: 'Northwind',               author: 'Karl Sefton',    year: 2016, category: 'Fiction',  pages: 268, rating: 4.0 },
-  { id: 'book-07', title: 'The Last Cartographer',   author: 'Lucia Mendez',   year: 2022, category: 'Fiction',  pages: 402, rating: 4.5 },
-  { id: 'book-08', title: 'Echoes of Mars',          author: 'D. K. Rao',      year: 2024, category: 'Sci-Fi',   pages: 318, rating: 4.3 },
-  { id: 'book-09', title: 'The Copper Door',         author: 'Hannah Pike',    year: 2015, category: 'Mystery',  pages: 276, rating: 4.2 },
-  { id: 'book-10', title: 'Midnight Orchard',        author: 'S. Okafor',      year: 2021, category: 'Fiction',  pages: 360, rating: 4.4 },
-  { id: 'book-11', title: 'The Paper Astronomer',    author: 'Owen Frost',     year: 2017, category: 'Sci-Fi',   pages: 344, rating: 4.1 },
-  { id: 'book-12', title: 'Brambleheart',           author: 'J. M. Cole',     year: 2013, category: 'Fantasy',  pages: 298, rating: 4.0 },
-  { id: 'book-13', title: 'The Quiet Tide',          author: 'Ana Beltran',    year: 2025, category: 'Fiction',  pages: 312, rating: 4.6 },
-  { id: 'book-14', title: 'Ironwood Hollow',         author: 'Greg Mallory',   year: 2012, category: 'Fantasy',  pages: 430, rating: 4.2 },
-  { id: 'book-15', title: 'The Saffron Notebook',    author: 'Leila Nadir',    year: 2020, category: 'Mystery',  pages: 284, rating: 4.3 },
-  { id: 'book-16', title: 'Weeknight Feasts',        author: 'Rosa Lindqvist', year: 2023, category: 'Cookbook', pages: 240, rating: 4.5 }
+  { id: 'book-01', title: '吾輩は猫である', author: '夏目漱石',     year: 1905, category: '純文学',       pages: 470, rating: 4.2 },
+  { id: 'book-02', title: 'こころ',         author: '夏目漱石',     year: 1914, category: '純文学',       pages: 280, rating: 4.5 },
+  { id: 'book-03', title: '羅生門',         author: '芥川龍之介',   year: 1915, category: '純文学',       pages: 120, rating: 4.3 },
+  { id: 'book-04', title: '雪国',           author: '川端康成',     year: 1948, category: '純文学',       pages: 180, rating: 4.4 },
+  { id: 'book-05', title: '人間失格',       author: '太宰治',       year: 1948, category: '純文学',       pages: 160, rating: 4.6 },
+  { id: 'book-06', title: '銀河鉄道の夜',   author: '宮沢賢治',     year: 1934, category: 'ファンタジー', pages: 200, rating: 4.5 },
+  { id: 'book-07', title: '日本沈没',       author: '小松左京',     year: 1973, category: 'SF',           pages: 520, rating: 4.1 },
+  { id: 'book-08', title: '燃えよ剣',       author: '司馬遼太郎',   year: 1964, category: '歴史',         pages: 600, rating: 4.4 },
+  { id: 'book-09', title: 'ノルウェイの森', author: '村上春樹',     year: 1987, category: '純文学',       pages: 400, rating: 4.3 },
+  { id: 'book-10', title: '白夜行',         author: '東野圭吾',     year: 1999, category: 'ミステリー',   pages: 860, rating: 4.7 },
+  { id: 'book-11', title: '海辺のカフカ',   author: '村上春樹',     year: 2002, category: 'ファンタジー', pages: 640, rating: 4.4 },
+  { id: 'book-12', title: '容疑者Xの献身',  author: '東野圭吾',     year: 2005, category: 'ミステリー',   pages: 390, rating: 4.6 },
+  { id: 'book-13', title: '新世界より',     author: '貴志祐介',     year: 2008, category: 'SF',           pages: 1000, rating: 4.5 },
+  { id: 'book-14', title: '火花',           author: '又吉直樹',     year: 2015, category: '純文学',       pages: 150, rating: 4.0 },
+  { id: 'book-15', title: 'コンビニ人間',   author: '村田沙耶香',   year: 2016, category: '純文学',       pages: 170, rating: 4.4 },
+  { id: 'book-16', title: '蜜蜂と遠雷',     author: '恩田陸',       year: 2016, category: '純文学',       pages: 510, rating: 4.6 }
 ];
 
-// Return a deep copy so callers can mutate freely.
+// 呼び出し側が自由に変更できるよう、ディープコピーを返す。
 function seedBooks() {
   return SEED.map((b) => ({ ...b }));
 }

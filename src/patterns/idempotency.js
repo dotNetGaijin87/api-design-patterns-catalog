@@ -5,13 +5,13 @@ const { seedBooks } = require('../data');
 // ---------------------------------------------------------------------------
 // Idempotency / Request Deduplication
 // ---------------------------------------------------------------------------
-// POST is not naturally idempotent: a retried "create" after a dropped
-// response would make a duplicate. An Idempotency-Key header lets the server
-// recognise a replay and return the original result instead of acting twice.
+// POST は本来べき等ではない。レスポンスが失われた後にリトライすると「作成」が重複する。
+// Idempotency-Key ヘッダーにより、サーバーはリトライを認識し、二重に実行する代わりに
+// 元の結果を返せる。
 
 let books = seedBooks();
 let nextId = books.length + 1;
-let keyCache = new Map(); // Idempotency-Key -> stored response body
+let keyCache = new Map(); // Idempotency-Key -> 保存したレスポンスボディ
 
 const BASE = '/api/idempotency';
 
@@ -19,8 +19,8 @@ function register(app) {
   app.post(`${BASE}/books`, (req, res) => {
     const key = req.get('Idempotency-Key');
 
-    // Replay: we've seen this key before — return the original creation,
-    // flagged so you can see it was deduplicated rather than re-created.
+    // リプレイ: 既知のキーなら、元の作成結果を返す。重複排除されたことが分かるように
+    // フラグを付ける。
     if (key && keyCache.has(key)) {
       return res
         .status(200)
@@ -31,10 +31,10 @@ function register(app) {
     const id = `book-${String(nextId++).padStart(2, '0')}`;
     const book = {
       id,
-      title: req.body.title || 'Untitled',
-      author: req.body.author || 'Unknown',
+      title: req.body.title || '無題',
+      author: req.body.author || '著者不明',
       year: req.body.year || new Date().getFullYear(),
-      category: req.body.category || 'Fiction',
+      category: req.body.category || '純文学',
       pages: req.body.pages || 0,
       rating: req.body.rating || 0
     };
@@ -59,41 +59,42 @@ function register(app) {
 module.exports = {
   meta: {
     id: 'idempotency',
-    title: 'Idempotency Keys',
-    blurb: 'Make POST safe to retry: the same Idempotency-Key returns the original result.',
+    category: 'writes-reliability',
+    title: '冪等性キー',
+    blurb: 'POST を安全にリトライ可能にする。同じ Idempotency-Key は元の結果を返す。',
     docs:
-      'A client that never hears back from a POST faces a dilemma: did the create succeed? If ' +
-      'it retries, it risks a duplicate. An Idempotency-Key header (a client-generated unique ' +
-      'value) solves this — the server stores the result against the key and, on any replay of ' +
-      'the same key, returns the original response instead of acting again.\n\n' +
-      'Run "Create (key=abc-123)" — note the new id and 201 status. Run it AGAIN: same id, but ' +
-      'now 200 with an Idempotent-Replayed: true header (look at the response headers). ' +
-      'Then "Create (key=xyz-789)" makes a genuinely new book. Use "List" to confirm the count.'
+      'POST のレスポンスが返ってこなかったクライアントは難しい判断を迫られます。作成は成功したのか？ ' +
+      'リトライすれば重複のリスクがあります。Idempotency-Key ヘッダー（クライアントが生成する一意な値）' +
+      'はこれを解決します。サーバーは結果をキーに紐づけて保存し、同じキーのリトライに対しては再実行せず、' +
+      '元のレスポンスを返します。\n\n' +
+      '「作成（key=abc-123）」を実行すると、新しい id と 201 が返ります。もう一度実行すると、同じ id ' +
+      'ながら 200 になり、Idempotent-Replayed: true ヘッダーが付きます（レスポンスヘッダーを確認して' +
+      'ください）。次に「作成（key=xyz-789）」は本当に新しい書籍を作成します。「一覧取得」で件数を確認できます。'
   },
   demos: [
     {
-      label: 'Create (key=abc-123)',
+      label: '作成（key=abc-123）',
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'abc-123' },
-      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction' }
+      body: { title: '坊っちゃん', author: '夏目漱石', year: 1906, category: '純文学' }
     },
     {
-      label: 'Create AGAIN (key=abc-123) → replay',
+      label: '再実行（key=abc-123）→ リプレイ',
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'abc-123' },
-      body: { title: 'The Hidden Atlas', author: 'Quinn Avery', year: 2024, category: 'Fiction' }
+      body: { title: '坊っちゃん', author: '夏目漱石', year: 1906, category: '純文学' }
     },
     {
-      label: 'Create (key=xyz-789) → new book',
+      label: '作成（key=xyz-789）→ 新規',
       method: 'POST',
       path: `${BASE}/books`,
       headers: { 'Idempotency-Key': 'xyz-789' },
-      body: { title: 'Silver Harbor', author: 'Lena Voss', year: 2025, category: 'Mystery' }
+      body: { title: '砂の女', author: '安部公房', year: 1962, category: '純文学' }
     },
-    { label: 'List books', method: 'GET', path: `${BASE}/books` },
-    { label: 'Reset demo data', method: 'POST', path: `${BASE}/_reset` }
+    { label: '書籍を一覧取得', method: 'GET', path: `${BASE}/books` },
+    { label: 'デモデータをリセット', method: 'POST', path: `${BASE}/_reset` }
   ],
   register
 };

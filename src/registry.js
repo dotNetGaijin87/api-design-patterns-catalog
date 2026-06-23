@@ -9,6 +9,7 @@ module.exports = [
   require('./patterns/pagination'),
   require('./patterns/filtering'),
   require('./patterns/partial-response'),
+  require('./patterns/conditional-requests'),
   require('./patterns/long-running-operations'),
   require('./patterns/idempotency'),
   require('./patterns/soft-deletion')

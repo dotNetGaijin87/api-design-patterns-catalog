@@ -1,20 +1,20 @@
-'use strict';
+"use strict";
 
 // Node の http の上に作った、ごく小さな Express 風アプリ（依存ゼロ）。
 // app.scope(base) は base 配下にルートをまとめて登録するルーターを返す。
 
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const { URL } = require('url');
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const { URL } = require("url");
 
 const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
 };
 
 function createApp() {
@@ -22,7 +22,7 @@ function createApp() {
   let staticDir = null;
 
   function add(method, pattern, handler) {
-    routes.push({ method, segments: pattern.split('/').filter(Boolean), handler });
+    routes.push({ method, segments: pattern.split("/").filter(Boolean), handler });
   }
 
   function match(routeSegs, urlSegs) {
@@ -30,8 +30,12 @@ function createApp() {
     const params = {};
     for (let i = 0; i < routeSegs.length; i++) {
       const r = routeSegs[i];
-      if (r.startsWith(':')) {
-        params[r.slice(1)] = decodeURIComponent(urlSegs[i]);
+      if (r.startsWith(":")) {
+        try {
+          params[r.slice(1)] = decodeURIComponent(urlSegs[i]);
+        } catch {
+          params[r.slice(1)] = urlSegs[i];
+        }
       } else if (r !== urlSegs[i]) {
         return null;
       }
@@ -40,12 +44,12 @@ function createApp() {
   }
 
   const server = http.createServer((rawReq, rawRes) => {
-    const parsed = new URL(rawReq.url, 'http://localhost');
-    const urlSegs = parsed.pathname.split('/').filter(Boolean);
+    const parsed = new URL(rawReq.url, "http://localhost");
+    const urlSegs = parsed.pathname.split("/").filter(Boolean);
 
-    let raw = '';
-    rawReq.on('data', (chunk) => (raw += chunk));
-    rawReq.on('end', () => {
+    let raw = "";
+    rawReq.on("data", (chunk) => (raw += chunk));
+    rawReq.on("end", () => {
       const req = buildReq(rawReq, parsed, raw);
       const res = buildRes(rawRes);
 
@@ -57,34 +61,41 @@ function createApp() {
         try {
           return route.handler(req, res);
         } catch (err) {
-          return res.status(500).json({ error: { code: 'INTERNAL', message: String(err && err.message) } });
+          return res
+            .status(500)
+            .json({ error: { code: "INTERNAL", message: String(err && err.message) } });
         }
       }
 
-      if (rawReq.method === 'GET' && staticDir && serveStatic(staticDir, parsed.pathname, res)) return;
+      if (rawReq.method === "GET" && staticDir && serveStatic(staticDir, parsed.pathname, res))
+        return;
 
-      res.status(404).json({ error: { code: 'NOT_FOUND', message: `No route for ${rawReq.method} ${parsed.pathname}` } });
+      res.status(404).json({
+        error: { code: "NOT_FOUND", message: `No route for ${rawReq.method} ${parsed.pathname}` },
+      });
     });
   });
 
   const app = {
-    get: (p, h) => add('GET', p, h),
-    post: (p, h) => add('POST', p, h),
-    put: (p, h) => add('PUT', p, h),
-    patch: (p, h) => add('PATCH', p, h),
-    delete: (p, h) => add('DELETE', p, h),
+    get: (p, h) => add("GET", p, h),
+    post: (p, h) => add("POST", p, h),
+    put: (p, h) => add("PUT", p, h),
+    patch: (p, h) => add("PATCH", p, h),
+    delete: (p, h) => add("DELETE", p, h),
     scope: (base) => ({
       base,
-      get: (p, h) => add('GET', base + p, h),
-      post: (p, h) => add('POST', base + p, h),
-      put: (p, h) => add('PUT', base + p, h),
-      patch: (p, h) => add('PATCH', base + p, h),
-      delete: (p, h) => add('DELETE', base + p, h)
+      get: (p, h) => add("GET", base + p, h),
+      post: (p, h) => add("POST", base + p, h),
+      put: (p, h) => add("PUT", base + p, h),
+      patch: (p, h) => add("PATCH", base + p, h),
+      delete: (p, h) => add("DELETE", base + p, h),
     }),
-    static: (dir) => { staticDir = dir; },
+    static: (dir) => {
+      staticDir = dir;
+    },
     listen: (port, cb) => {
-      server.on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
+      server.on("error", (err) => {
+        if (err.code === "EADDRINUSE") {
           console.error(`\n  Port ${port} is already in use.`);
           console.error(`  Pick another with:  PORT=5050 npm start\n`);
           process.exit(1);
@@ -92,7 +103,7 @@ function createApp() {
         throw err;
       });
       server.listen(port, cb);
-    }
+    },
   };
   return app;
 }
@@ -103,7 +114,11 @@ function buildReq(rawReq, parsed, raw) {
 
   let body = {};
   if (raw) {
-    try { body = JSON.parse(raw); } catch { body = {}; }
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      body = {};
+    }
   }
 
   return {
@@ -112,40 +127,53 @@ function buildReq(rawReq, parsed, raw) {
     query,
     body,
     params: {},
-    get: (name) => rawReq.headers[String(name).toLowerCase()]
+    get: (name) => rawReq.headers[String(name).toLowerCase()],
   };
 }
 
 function buildRes(rawRes) {
   let statusCode = 200;
   const res = {
-    status(code) { statusCode = code; return res; },
-    set(name, value) { rawRes.setHeader(name, value); return res; },
-    location(url) { rawRes.setHeader('Location', url); return res; },
+    status(code) {
+      statusCode = code;
+      return res;
+    },
+    set(name, value) {
+      rawRes.setHeader(name, value);
+      return res;
+    },
+    location(url) {
+      rawRes.setHeader("Location", url);
+      return res;
+    },
     json(obj) {
       rawRes.statusCode = statusCode;
-      rawRes.setHeader('Content-Type', 'application/json; charset=utf-8');
+      rawRes.setHeader("Content-Type", "application/json; charset=utf-8");
       rawRes.end(JSON.stringify(obj));
       return res;
     },
     send(text) {
       rawRes.statusCode = statusCode;
-      rawRes.end(text == null ? '' : Buffer.isBuffer(text) ? text : String(text));
+      rawRes.end(text == null ? "" : Buffer.isBuffer(text) ? text : String(text));
       return res;
     },
-    end() { rawRes.statusCode = statusCode; rawRes.end(); return res; }
+    end() {
+      rawRes.statusCode = statusCode;
+      rawRes.end();
+      return res;
+    },
   };
   return res;
 }
 
 function serveStatic(dir, urlPath, res) {
-  const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
+  const rel = urlPath === "/" ? "index.html" : urlPath.replace(/^\/+/, "");
   const full = path.join(dir, rel);
   if (!full.startsWith(path.resolve(dir))) return false; // ディレクトリ外への参照を防ぐ
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
 
-  const type = MIME[path.extname(full).toLowerCase()] || 'application/octet-stream';
-  res.set('Content-Type', type).status(200);
+  const type = MIME[path.extname(full).toLowerCase()] || "application/octet-stream";
+  res.set("Content-Type", type).status(200);
   res.send(fs.readFileSync(full));
   return true;
 }

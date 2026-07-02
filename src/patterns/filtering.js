@@ -19,13 +19,15 @@ function register(r) {
       applied.category = category;
       result = result.filter((b) => b.category === category);
     }
-    if (minYear) {
-      applied.minYear = Number(minYear);
-      result = result.filter((b) => b.year >= Number(minYear));
+    const min = Number(minYear);
+    if (minYear && !Number.isNaN(min)) {
+      applied.minYear = min;
+      result = result.filter((b) => b.year >= min);
     }
-    if (maxYear) {
-      applied.maxYear = Number(maxYear);
-      result = result.filter((b) => b.year <= Number(maxYear));
+    const max = Number(maxYear);
+    if (maxYear && !Number.isNaN(max)) {
+      applied.maxYear = max;
+      result = result.filter((b) => b.year <= max);
     }
     if (q) {
       applied.q = q;

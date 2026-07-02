@@ -26,7 +26,8 @@ function register(r) {
     // エンティティタグによる前提条件。存在すれば時刻ベースより優先する。
     const inm = req.get('If-None-Match');
     if (inm !== undefined) {
-      if (inm === tag) return res.status(304).end();
+      // '*' は「現在の表現が存在するか」を問う条件。存在するので 304 を返す。
+      if (inm.trim() === '*' || inm === tag) return res.status(304).end();
       return res.json(book);
     }
 

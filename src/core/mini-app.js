@@ -168,8 +168,10 @@ function buildRes(rawRes) {
 
 function serveStatic(dir, urlPath, res) {
   const rel = urlPath === "/" ? "index.html" : urlPath.replace(/^\/+/, "");
-  const full = path.join(dir, rel);
-  if (!full.startsWith(path.resolve(dir))) return false; // ディレクトリ外への参照を防ぐ
+  const base = path.resolve(dir);
+  const full = path.resolve(base, rel);
+  // ディレクトリ外への参照を防ぐ（前方一致だと public-x のような兄弟ディレクトリを誤許可するため、パス境界で判定する）。
+  if (full !== base && !full.startsWith(base + path.sep)) return false;
   if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return false;
 
   const type = MIME[path.extname(full).toLowerCase()] || "application/octet-stream";
